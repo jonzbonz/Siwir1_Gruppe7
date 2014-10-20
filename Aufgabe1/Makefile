@@ -5,18 +5,13 @@ INCLUDES =
 LDFLAGS =
 LIBS =
 
-# blas
-INCLUDES += -I/usr/lib64/atlas/include/
-LDFLAGS += -L/usr/lib64/atlas/
-LIBS += -lcblas -latlas
-
 # likwid
 CXXFLAGS += -DUSE_LIKWID -pthread
 INCLUDES += -I/usr/local/likwid-3.1.2/include/
 LDFLAGS += -L/usr/local/likwid-3.1.2/lib/
 LIBS += -llikwid
 
-TARGET = ex01_example
+TARGET = matmult
 OBJS = $(TARGET).o
 
 all: $(TARGET)

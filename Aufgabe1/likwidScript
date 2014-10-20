@@ -3,7 +3,7 @@
 # do not forget to execute "module load likwid" !
 
 CORE="0"
-PROGRAM="ex01_example"
+PROGRAM="matmult"
 echo Profiling program $PROGRAM on core $CORE
 
 echo ================================================================================
