@@ -1,3 +1,11 @@
+/*==========================================================================
+ * Performance so far:														|
+ * Naive Implementation: 0.344938s(512x512), 2.93396s(1024x1024)			|
+ * TODO why does it take over 6 seconds for the make perf1024 command to	|
+ * 		finish?																|
+ *==========================================================================
+ */
+
 #include "Timer.h"
 
 #include <fstream>
@@ -64,7 +72,12 @@ int main(int argc, char* argv[])
 	}
 
 
-   siwir::Timer timer;
+	siwir::Timer timer;
+
+
+	int n3 = m1;
+	int m3 = n2;
+	double* ergmat = new double[n3*m3];
 
 /*
 #ifdef USE_LIKWID
@@ -74,16 +87,34 @@ int main(int argc, char* argv[])
 */
 
 	// bitte hier koten
-   std::cout << "Hallo :)\n";
+	for(int i = 0; i < n3; ++i){			// ueber die Zeilen von ergmat
+		for(int j = 0; j < m3; ++j){		// ueber die Spalten von ergmat
+			for(int k = 0; k < n1; ++k){	// ueber die Spalten von mat1 / Zeilen von mat2
+				ergmat[i*n3 + j] += mat1[i*n1 + k] * mat2[k*n2 + j];
+			}
+			//std::cout << ergmat[i*n3 + j] << " "; //Auskommentieren zum ueberpruefen auf richtigkeit
+		}
+		//std::cout << std::endl;					//Ebenso
+	}
+
+	
 
 /*  
 #ifdef USE_LIKWID
-   likwid_markerStopRegion( "matmult" );
+	likwid_markerStopRegion( "matmult" );
 #endif  
 */
 
-   double time = timer.elapsed();
+   	double time = timer.elapsed();
+	
+	std::ofstream outfile(argv[3]);
+	outfile << n3 << " " << m3 << std::endl;
 
+	for(int i = 0; i < n3*m3; ++i){
+		outfile << ergmat[i] << std::endl;
+	}
+
+	outfile.close();
    
     std::cout << "Calculation took " << time << " seconds\n";  
 }
