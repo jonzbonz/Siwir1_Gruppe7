@@ -5,11 +5,12 @@ INCLUDES =
 LDFLAGS =
 LIBS =
 
+
 # likwid
-CXXFLAGS += -DUSE_LIKWID -pthread
-INCLUDES += -I/usr/local/likwid-3.1.2/include/
-LDFLAGS += -L/usr/local/likwid-3.1.2/lib/
-LIBS += -llikwid
+#CXXFLAGS += -DUSE_LIKWID -pthread
+#INCLUDES += -I/usr/local/likwid-3.1.2/include/
+#LDFLAGS += -L/usr/local/likwid-3.1.2/lib/
+#LIBS += -llikwid
 
 TARGET = matmult
 OBJS = $(TARGET).o
@@ -24,3 +25,6 @@ $(TARGET).o: $(TARGET).cpp Timer.h Makefile
 
 clean:
 	@$(RM) -rf *.o $(TARGET)
+
+run: $(TARGET)
+	./$(TARGET) A.in B.in C.out
