@@ -29,25 +29,50 @@ clean:
 run: $(TARGET)
 	./$(TARGET) A.in B.in C.out
 
-perfAll: perf32 perf64 perf128 perf256 perf512 perf1024 perf2048
+perfClean:
+	rm -f perf.log
+
+perfAll: perfClean perf32 perf64 perf128 perf256 perf512
+	 git commit -a -m "automatic commit of the perflog"
 
 perf32: $(TARGET)
-	./$(TARGET) Matrices/perfMatrices/32x32-1 Matrices/perfMatrices/32x32-2 C.out
+	echo "Calculating 32x32" >> perf.log
+	./$(TARGET) Matrices/perfMatrices/32x32-1 Matrices/perfMatrices/32x32-2 C.out >> perf.log
 
 perf64: $(TARGET)
-	./$(TARGET) Matrices/perfMatrices/64x64-1 Matrices/perfMatrices/64x64-2 C.out
+	echo "Calculating 64x64" >> perf.log
+	./$(TARGET) Matrices/perfMatrices/64x64-1 Matrices/perfMatrices/64x64-2 C.out >> perf.log
 
 perf128: $(TARGET)
-	./$(TARGET) Matrices/perfMatrices/128x128-1 Matrices/perfMatrices/128x128-2 C.out
+	echo "Calculating 128x128" >> perf.log
+	./$(TARGET) Matrices/perfMatrices/128x128-1 Matrices/perfMatrices/128x128-2 C.out >> perf.log
 
 perf256: $(TARGET)
-	./$(TARGET) Matrices/perfMatrices/256x256-1 Matrices/perfMatrices/256x256-2 C.out
+	echo "Calculating 256x256" >> perf.log
+	./$(TARGET) Matrices/perfMatrices/256x256-1 Matrices/perfMatrices/256x256-2 C.out >> perf.log
 
 perf512: $(TARGET)
-	./$(TARGET) Matrices/perfMatrices/512x512-1 Matrices/perfMatrices/512x512-2 C.out
+	echo "Calculating 512x512" >> perf.log
+	./$(TARGET) Matrices/perfMatrices/512x512-1 Matrices/perfMatrices/512x512-2 C.out >> perf.log
 
 perf1024: $(TARGET)
-	./$(TARGET) Matrices/perfMatrices/1024x1024-1 Matrices/perfMatrices/1024x1024-2 C.out
+	echo "Calculating 1024x1024" >> perf.log
+	./$(TARGET) Matrices/perfMatrices/1024x1024-1 Matrices/perfMatrices/1024x1024-2 C.out >> perf.log
 
 perf2048: $(TARGET)
-	./$(TARGET) Matrices/perfMatrices/2048x2048-1 Matrices/perfMatrices/2048x2048-2 C.out
+	echo "Calculating 2048x2048" >> perf.log
+	./$(TARGET) Matrices/perfMatrices/2048x2048-1 Matrices/perfMatrices/2048x2048-2 C.out >> perf.log
+
+test1: $(TARGET)
+	./$(TARGET) Matrices/testMatrices/A.in Matrices/testMatrices/B.in C.out
+	diff -s C.out Matrices/testMatrices/C.out
+
+test2: $(TARGET)
+	./$(TARGET) Matrices/testMatrices/A2.in Matrices/testMatrices/B2.in C.out
+	diff -s C.out Matrices/testMatrices/C2.out
+	
+test3: $(TARGET)
+	./$(TARGET) Matrices/testMatrices/A3.in Matrices/testMatrices/B3.in C.out
+	diff -s C.out Matrices/testMatrices/C3.out
+
+testAll: test1 test2 test3

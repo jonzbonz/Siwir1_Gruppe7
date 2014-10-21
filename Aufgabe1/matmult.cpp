@@ -42,9 +42,9 @@ int main(int argc, char* argv[])
 	
 	std::ifstream firstMatFile(argv[1]);
 	std::getline(firstMatFile, line);
-	n1 = atoi(line.c_str());
-	line.erase(0, line.find(' ') + 1);
 	m1 = atoi(line.c_str());
+	line.erase(0, line.find(' ') + 1);
+	n1 = atoi(line.c_str());
 	mat1 = new double[n1*m1];
 
 	double* cur = mat1;
@@ -55,9 +55,9 @@ int main(int argc, char* argv[])
 
 	std::ifstream secondMatFile(argv[2]);
 	std::getline(secondMatFile, line);
-	n2 = atoi(line.c_str());
-	line.erase(0, line.find(' ') + 1);
 	m2 = atoi(line.c_str());
+	line.erase(0, line.find(' ') + 1);
+	n2 = atoi(line.c_str());
 	mat2 = new double[n2*m2];
 	
 	cur = mat2;
@@ -66,49 +66,45 @@ int main(int argc, char* argv[])
 	}
 	secondMatFile.close();
 
-	if(n1 != m2){
-		std::cerr << "Die Zeilenanzahl der ersten Matrix (hier " << n1 << ") muss gleich der Spaltenanzahl der zweiten Matrix (hier " << m2 << ") sein!" << std::endl;
+	if(n1 != m2){ 
+		std::cerr << "Die Spaltenanzahl der ersten Matrix (hier " << n1 << ") muss gleich der Zeilenanzahl der zweiten Matrix (hier " << m2 << ") sein!" << std::endl;
 		return 1;
 	}
 
-
-	siwir::Timer timer;
-
-
-	int n3 = m1;
-	int m3 = n2;
+	int n3 = n2;
+	int m3 = m1;
 	double* ergmat = new double[n3*m3];
 
-/*
+/* 
 #ifdef USE_LIKWID
 	likwid_markerInit();
 	likwid_markerStartRegion("matmult");
 #endif
 */
 
+	siwir::Timer timer;
+
 	// bitte hier koten
-	for(int i = 0; i < n3; ++i){			// ueber die Zeilen von ergmat
-		for(int j = 0; j < m3; ++j){		// ueber die Spalten von ergmat
-			for(int k = 0; k < n1; ++k){	// ueber die Spalten von mat1 / Zeilen von mat2
+	for(int i = 0; i  < m3; ++i){					// ueber die Zeilen von ergmat
+		for(int j = 0; j  < n3; ++j){				// ueber die Spalten von ergmat
+			for(int k = 0;  k < n1/*bzw m2*/; ++k){	// ueber die Spalten von mat1 / Zeilen von mat2
 				ergmat[i*n3 + j] += mat1[i*n1 + k] * mat2[k*n2 + j];
 			}
-			//std::cout << ergmat[i*n3 + j] << " "; //Auskommentieren zum ueberpruefen auf richtigkeit
 		}
-		//std::cout << std::endl;					//Ebenso
 	}
 
+   	double time = timer.elapsed();
 	
 
-/*  
+/*   
 #ifdef USE_LIKWID
 	likwid_markerStopRegion( "matmult" );
 #endif  
 */
 
-   	double time = timer.elapsed();
 	
 	std::ofstream outfile(argv[3]);
-	outfile << n3 << " " << m3 << std::endl;
+	outfile << m3 << " " << n3 << std::endl;
 
 	for(int i = 0; i < n3*m3; ++i){
 		outfile << ergmat[i] << std::endl;
