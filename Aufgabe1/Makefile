@@ -34,6 +34,7 @@ perfClean:
 
 perfAll: perfClean perf32 perf64 perf128 perf256 perf512
 	 git commit -a -m "automatic commit of the perflog"
+	 git push
 
 perf32: $(TARGET)
 	echo "Calculating 32x32" >> perf.log
