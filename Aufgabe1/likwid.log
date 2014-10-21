@@ -1,0 +1,129 @@
+Profiling program matmult on core 0
+================================================================================
+
+Measuring performance for event group FLOPS_DP using the marker api...
+Calculation took 2.58713 seconds
+-------------------------------------------------------------
+-------------------------------------------------------------
+CPU type:	Intel Core SandyBridge processor 
+CPU clock:	3.39 GHz 
+Measuring group FLOPS_DP
+-------------------------------------------------------------
+./matmult Matrices/testMatrices/A2.in Matrices/testMatrices/B2.in C.out
+
+=====================
+Region: matmult 
+=====================
++-------------------+---------+
+|    Region Info    | core 0  |
++-------------------+---------+
+| RDTSC Runtime [s] | 2.58714 |
+|    call count     |    1    |
++-------------------+---------+
++--------------------------------------+-------------+
+|                Event                 |   core 0    |
++--------------------------------------+-------------+
+|          INSTR_RETIRED_ANY           | 8.24121e+09 |
+|        CPU_CLK_UNHALTED_CORE         | 9.64577e+09 |
+|         CPU_CLK_UNHALTED_REF         | 8.67061e+09 |
+| FP_COMP_OPS_EXE_SSE_FP_PACKED_DOUBLE |      0      |
+| FP_COMP_OPS_EXE_SSE_FP_SCALAR_DOUBLE | 2.94141e+09 |
+|      SIMD_FP_256_PACKED_DOUBLE       |      0      |
++--------------------------------------+-------------+
++----------------------+---------+
+|        Metric        | core 0  |
++----------------------+---------+
+| Runtime (RDTSC) [s]  | 2.58714 |
+| Runtime unhalted [s] | 2.84349 |
+|     Clock [MHz]      | 3773.74 |
+|         CPI          | 1.17043 |
+|       MFlops/s       | 1136.94 |
+|   32b AVX MFlops/s   |    0    |
+|    Packed MUOPS/s    |    0    |
+|    Scalar MUOPS/s    | 1136.94 |
++----------------------+---------+
+================================================================================
+
+Measuring performance for event group L2 using the marker api...
+Calculation took 2.55915 seconds
+-------------------------------------------------------------
+-------------------------------------------------------------
+CPU type:	Intel Core SandyBridge processor 
+CPU clock:	3.39 GHz 
+Measuring group L2
+-------------------------------------------------------------
+./matmult Matrices/testMatrices/A2.in Matrices/testMatrices/B2.in C.out
+
+=====================
+Region: matmult 
+=====================
++-------------------+---------+
+|    Region Info    | core 0  |
++-------------------+---------+
+| RDTSC Runtime [s] | 2.55916 |
+|    call count     |    1    |
++-------------------+---------+
++-----------------------+-------------+
+|         Event         |   core 0    |
++-----------------------+-------------+
+|   INSTR_RETIRED_ANY   | 8.24121e+09 |
+| CPU_CLK_UNHALTED_CORE | 9.58696e+09 |
+| CPU_CLK_UNHALTED_REF  | 8.58497e+09 |
+|    L1D_REPLACEMENT    | 1.15874e+09 |
+|      L1D_M_EVICT      | 1.32617e+06 |
++-----------------------+-------------+
++-------------------------+---------+
+|         Metric          | core 0  |
++-------------------------+---------+
+|   Runtime (RDTSC) [s]   | 2.55916 |
+|  Runtime unhalted [s]   | 2.82609 |
+|       Clock [MHz]       | 3788.23 |
+|           CPI           | 1.16329 |
+|   L2 Load [MBytes/s]    | 28977.9 |
+|   L2 Evict [MBytes/s]   | 33.1652 |
+| L2 bandwidth [MBytes/s] | 29011.1 |
+| L2 data volume [GBytes] | 74.2442 |
++-------------------------+---------+
+================================================================================
+
+Measuring performance for event group L2CACHE using the marker api...
+Calculation took 2.57887 seconds
+-------------------------------------------------------------
+-------------------------------------------------------------
+CPU type:	Intel Core SandyBridge processor 
+CPU clock:	3.39 GHz 
+Measuring group L2CACHE
+-------------------------------------------------------------
+./matmult Matrices/testMatrices/A2.in Matrices/testMatrices/B2.in C.out
+
+=====================
+Region: matmult 
+=====================
++-------------------+---------+
+|    Region Info    | core 0  |
++-------------------+---------+
+| RDTSC Runtime [s] | 2.57888 |
+|    call count     |    1    |
++-------------------+---------+
++-----------------------+-------------+
+|         Event         |   core 0    |
++-----------------------+-------------+
+|   INSTR_RETIRED_ANY   | 8.24121e+09 |
+| CPU_CLK_UNHALTED_CORE | 9.64288e+09 |
+| CPU_CLK_UNHALTED_REF  | 8.65015e+09 |
+| L2_TRANS_ALL_REQUESTS | 1.55999e+09 |
+|     L2_RQSTS_MISS     | 1.38599e+08 |
++-----------------------+-------------+
++----------------------+-----------+
+|        Metric        |  core 0   |
++----------------------+-----------+
+| Runtime (RDTSC) [s]  |  2.57888  |
+| Runtime unhalted [s] |  2.84258  |
+|     Clock [MHz]      |  3781.61  |
+|         CPI          |  1.17008  |
+|   L2 request rate    | 0.189291  |
+|     L2 miss rate     | 0.0168179 |
+|    L2 miss ratio     | 0.0888465 |
++----------------------+-----------+
+================================================================================
+
