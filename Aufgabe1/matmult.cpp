@@ -1,8 +1,5 @@
 /*==========================================================================
- * Performance so far:														|
- * Naive Implementation: 0.344938s(512x512), 2.93396s(1024x1024)			|
- * TODO why does it take over 6 seconds for the make perf1024 command to	|
- * 		finish?																|
+ * TODO Enter todo's														|
  *==========================================================================
  */
 
@@ -15,15 +12,16 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 
-/* 
+ 
 #ifdef USE_LIKWID
 extern "C" {
 #include <likwid.h>
 }
 #endif
-*/
+
 
 
 int main(int argc, char* argv[])
@@ -34,80 +32,137 @@ int main(int argc, char* argv[])
 	}
 
 	//Reading input / creating matrices
-	double* mat1 = 0;
-	double* mat2 = 0;
-	int n1, m1, n2, m2;
+	double* matA = 0;
+	double* matB = 0;
+	int na, ma, nb, mb;
 
 	std::string line;
 	
 	std::ifstream firstMatFile(argv[1]);
 	std::getline(firstMatFile, line);
-	m1 = atoi(line.c_str());
+	ma = atoi(line.c_str());
 	line.erase(0, line.find(' ') + 1);
-	n1 = atoi(line.c_str());
-	mat1 = new double[n1*m1];
-
-	double* cur = mat1;
-	while(std::getline(firstMatFile, line)){
-		(cur++)[0] = atof(line.c_str());
-	}
-	firstMatFile.close();
+	na = atoi(line.c_str());
 
 	std::ifstream secondMatFile(argv[2]);
 	std::getline(secondMatFile, line);
-	m2 = atoi(line.c_str());
+	mb = atoi(line.c_str());
 	line.erase(0, line.find(' ') + 1);
-	n2 = atoi(line.c_str());
-	mat2 = new double[n2*m2];
+	nb = atoi(line.c_str());
 	
-	cur = mat2;
-	while(std::getline(secondMatFile, line)){
-		(cur++)[0] = atof(line.c_str());
+	bool useStrassen = false;
+	int nn = 1;
+	if(na == ma && nb == mb && n2*m1 >= 0){ //TODO gute grenze finden
+		std::cout << "using strassen" << std::endl;
+		useStrassen = true;
+		
+		while(nn < na) nn = nn << 1;
+
+		matA = new double[nn*nn];
+		memset(matA, 0, nn*nn*sizeof(double));
+		matB = new double[nn*nn];
+		memset(matB, 0, nn*nn*sizeof(double));
+	} else {
+		matA = new double[na*ma];
+		std::cout << na << "x" << ma << " Matrix erstellt" << std::endl;
+		matB = new double[nb*mb];
+		std::cout << nb << "x" << mb << " Matrix erstellt" << std::endl;
+	}
+	
+
+	for(int i = 0; i < ma; ++i){
+		for(int j = 0; j < na; ++j){
+			if(!std::getline(firstMatFile, line)){
+				std::cerr << "Unexpected end of file!" << std::endl;
+				return 1;
+			}
+			matA[i*na + j] = atof(line.c_str());
+		}
+	}
+	firstMatFile.close();
+
+	for(int i = 0; i < mb; ++i){
+		for(int j = 0; j < nb; ++j){
+			if(!std::getline(secondMatFile, line)){
+				std::cerr << "Unexpected end of file!" << std::endl;
+				return 1;
+			}
+			matB[i*nb + j] = atof(line.c_str());
+		}
 	}
 	secondMatFile.close();
 
-	if(n1 != m2){ 
-		std::cerr << "Die Spaltenanzahl der ersten Matrix (hier " << n1 << ") muss gleich der Zeilenanzahl der zweiten Matrix (hier " << m2 << ") sein!" << std::endl;
+	if(na != mb){ 
+		std::cerr << "Die Spaltenanzahl der ersten Matrix (hier " << na << ") muss gleich der Zeilenanzahl der zweiten Matrix (hier " << mb << ") sein!" << std::endl;
 		return 1;
 	}
 
-	int n3 = n2;
-	int m3 = m1;
-	double* ergmat = new double[n3*m3];
+	int nc = nb;
+	int mc = ma;
+	double* matC = new double[nc*mc];
 
-/* 
+ 
 #ifdef USE_LIKWID
 	likwid_markerInit();
 	likwid_markerStartRegion("matmult");
 #endif
-*/
+
 
 	siwir::Timer timer;
 
-	// bitte hier koten
-	for(int i = 0; i  < m3; ++i){					// ueber die Zeilen von ergmat
-		for(int j = 0; j  < n3; ++j){				// ueber die Spalten von ergmat
-			for(int k = 0;  k < n1/*bzw m2*/; ++k){	// ueber die Spalten von mat1 / Zeilen von mat2
-				ergmat[i*n3 + j] += mat1[i*n1 + k] * mat2[k*n2 + j];
+
+	if(!useStrassen){
+		std::cout << na << ma << nb << mb << nc << mc << std::endl;
+
+
+		for(int j = 0; j  < nc; ++j){						// ueber die Spalten von matC
+			for(int i = 0; i  < mc; ++i){					// ueber die Zeilen von matC
+				for(int k = 0;  k < na/*bzw mb*/; ++k){		// ueber die Spalten von matA / Zeilen von matB
+					matC[i*nc + j] += matA[i*na + k] * matB[k*nb + j];
+				}
 			}
 		}
+	} else {
+		
+		//Strassen-Algorithmus - nur fuer grosse und quadratische matrizen
+		
+		std::cout << "Strassen not implemented yet!!!" << std::endl;	
+		
+		int offset = nn*nn/4;
+		double* M = new double[offset*7];
+
+		for(int j = 0; j  < nn/2; ++j){
+			for(int i = 0; i  < nn/2; ++i){
+				
+				for(int k = 0; k < nn/2; k++){
+					//TODO
+				}
+
+			}
+		}
+
+
 	}
+
+
+
 
    	double time = timer.elapsed();
 	
 
-/*   
+   
 #ifdef USE_LIKWID
-	likwid_markerStopRegion( "matmult" );
+	likwid_markerStopRegion("matmult");
+	likwid_markerClose();
 #endif  
-*/
+
 
 	
 	std::ofstream outfile(argv[3]);
-	outfile << m3 << " " << n3 << std::endl;
+	outfile << mc << " " << nc << std::endl;
 
-	for(int i = 0; i < n3*m3; ++i){
-		outfile << ergmat[i] << std::endl;
+	for(int i = 0; i < nc*mc; ++i){
+		outfile << matC[i] << std::endl;
 	}
 
 	outfile.close();
