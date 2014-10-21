@@ -32,7 +32,9 @@ run: $(TARGET)
 perfClean:
 	rm -f perf.log
 
-perfAll: perfClean perf32 perf64 perf128 perf256 perf512
+perfAll: perfClean perf32 perf64 perf128 perf256 perf512 perf1024 perf2048
+
+perfAllGit: perfClean perf32 perf64 perf128 perf256 perf512 perf1024 perf2048
 	 git commit -a -m "automatic commit of the perflog"
 	 git push
 
