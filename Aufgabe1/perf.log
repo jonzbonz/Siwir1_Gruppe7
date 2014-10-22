@@ -1,18 +1,14 @@
 Calculating 32x32
-Calculation took 8.7e-05 seconds
+Calculation took 6.2e-05 seconds
 Calculating 64x64
-Calculation took 0.000564 seconds
+Calculation took 0.000533 seconds
 Calculating 128x128
-Calculation took 0.004975 seconds
+Calculation took 0.003861 seconds
 Calculating 256x256
-Calculation took 0.041313 seconds
+Calculation took 0.038778 seconds
 Calculating 512x512
-Calculation took 0.339156 seconds
+Calculation took 0.376523 seconds
 Calculating 1024x1024
-Calculation took 6.89387 seconds
+Calculation took 6.63358 seconds
 Calculating 2048x2048
-Calculation took 82.7456 seconds
-Calculating 1024x1024
-Calculation took 2.88142 seconds
-Calculating 1024x1024
-Calculation took 2.93944 seconds
+Calculation took 58.1251 seconds

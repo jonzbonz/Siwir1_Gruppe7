@@ -168,15 +168,16 @@ int main(int argc, char* argv[])
 				
 				matC[i*nn + j + nnh] = M3[pos] + M5[pos];
 				
-				matC[(i+nnh)*nn + j] = M2[pos] + M3[pos];
+				matC[(i+nnh)*nn + j] = M2[pos] + M4[pos];
 
 				matC[(i+nnh)*nn + j + nnh] = M1[pos] - M2[pos] + M3[pos] + M6[pos];
 			}
 		}
 		
 		
-		for(int i = 1; i < 8; ++i){
-			std::cout << "M" << i << ":" << std::endl;
+		/*	
+		for(int i = 0; i < 7; ++i){
+			std::cout << "M" << i+1 << ":" << std::endl;
 			for(int j = 0; j < nnh; ++j){
 				for(int k = 0; k < nnh; ++k){
 					std::cout << M[i*nnh*nnh + j*nnh + k] << " ";
@@ -184,14 +185,10 @@ int main(int argc, char* argv[])
 				std::cout << std::endl;
 			}
 		}
+		*/
 	}
 
-
-
-
    	double time = timer.elapsed();
-	
-
    
 #ifdef USE_LIKWID
 	likwid_markerStopRegion("matmult");
