@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
 	
 	bool useStrassen = false;
 	int nn = 1;
-	if(na == ma && nb == mb && n2*m1 >= 0){ //TODO gute grenze finden
+	if(na == ma && nb == mb && nb*ma >= 0){ //TODO gute grenze finden
 		std::cout << "using strassen" << std::endl;
 		useStrassen = true;
 		
@@ -128,20 +128,62 @@ int main(int argc, char* argv[])
 		
 		std::cout << "Strassen not implemented yet!!!" << std::endl;	
 		
-		int offset = nn*nn/4;
-		double* M = new double[offset*7];
+		int nnh = nn/2;
 
-		for(int j = 0; j  < nn/2; ++j){
-			for(int i = 0; i  < nn/2; ++i){
+		int offset = nnh*nnh;
+		double* M = new double[offset*7];
+		memset(M, 0, offset*7*sizeof(double));
+
+		double* M1 = M;
+		double* M2 = M1 + offset;
+		double* M3 = M2 + offset;
+		double* M4 = M3 + offset;
+		double* M5 = M4 + offset;
+		double* M6 = M5 + offset;
+		double* M7 = M6 + offset;
+
+		for(int j = 0; j < nnh; ++j){
+			for(int i = 0; i < nnh; ++i){
 				
-				for(int k = 0; k < nn/2; k++){
-					//TODO
+				int pos = i*nnh + j;
+
+				for(int k = 0; k < nnh; ++k){
+					//(A11 + A22) * (B11 + B22)
+					M1[pos] += (matA[i*nn + k] + matA[(i+nnh)*nn + k + nnh]) * (matB[k*nn + j] + matB[(k+nnh)*nn + j + nnh]);
+					//(A21 + A22) * B11
+					M2[pos] += (matA[(i+nnh)*nn + k] + matA[(i+nnh)*nn + k + nnh]) * matB[k*nn + j];
+					//A11 * (B12 - B22)
+					M3[pos] += matA[i*nn + k] * (matB[k*nn + j + nnh] - matB[(k+nnh)*nn + j + nnh]);
+					//A22 * (B21 - B11)
+					M4[pos] += matA[(i+nnh)*nn + k + nnh] * (matB[(k+nnh)*nn + j] - matB[k*nn + j]);
+					//(A11 + A12) * B22
+					M5[pos] += (matA[i*nn + k] + matA[i*nn + k + nnh]) *  matB[(k+nnh)*nn + j + nnh];
+					//(A21 - A11) * (B11 + B12)
+					M6[pos] += (matA[(i+nnh)*nn + k] - matA[i*nn + k]) * (matB[k*nn + j] + matB[k*nn + j + nnh]);
+					//(A12 - A22) * (B21 + B22)
+					M7[pos] += (matA[i*nn + k + nnh] - matA[(i+nnh)*nn + k + nnh]) * (matB[(k+nnh)*nn + j] + matB[(k+nnh)*nn + j + nnh]);
 				}
 
+				matC[i*nn + j] = M1[pos] + M4[pos] - M5[pos] + M7[pos];
+				
+				matC[i*nn + j + nnh] = M3[pos] + M5[pos];
+				
+				matC[(i+nnh)*nn + j] = M2[pos] + M3[pos];
+
+				matC[(i+nnh)*nn + j + nnh] = M1[pos] - M2[pos] + M3[pos] + M6[pos];
 			}
 		}
-
-
+		
+		
+		for(int i = 1; i < 8; ++i){
+			std::cout << "M" << i << ":" << std::endl;
+			for(int j = 0; j < nnh; ++j){
+				for(int k = 0; k < nnh; ++k){
+					std::cout << M[i*nnh*nnh + j*nnh + k] << " ";
+				}
+				std::cout << std::endl;
+			}
+		}
 	}
 
 
