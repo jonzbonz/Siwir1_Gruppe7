@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-
+using namespace std;
  
 #ifdef USE_LIKWID
 extern "C" {
@@ -27,7 +27,7 @@ extern "C" {
 int main(int argc, char* argv[])
 {
 	if(argc != 4){
-		std::cerr << "Usage: ./matmult A.in B.in C.out" << std::endl;
+		cerr << "Usage: ./matmult A.in B.in C.out" << endl;
 		return 1;
 	}
 
@@ -36,16 +36,16 @@ int main(int argc, char* argv[])
 	double* matB = 0;
 	int na, ma, nb, mb;
 
-	std::string line;
+	string line;
 	
-	std::ifstream firstMatFile(argv[1]);
-	std::getline(firstMatFile, line);
+	ifstream firstMatFile(argv[1]);
+	getline(firstMatFile, line);
 	ma = atoi(line.c_str());
 	line.erase(0, line.find(' ') + 1);
 	na = atoi(line.c_str());
 
-	std::ifstream secondMatFile(argv[2]);
-	std::getline(secondMatFile, line);
+	ifstream secondMatFile(argv[2]);
+	getline(secondMatFile, line);
 	mb = atoi(line.c_str());
 	line.erase(0, line.find(' ') + 1);
 	nb = atoi(line.c_str());
@@ -53,7 +53,6 @@ int main(int argc, char* argv[])
 	bool useStrassen = false;
 	int nn = 1;
 	if(na == ma && nb == mb && nb*ma >= 0){ //TODO gute grenze finden
-		std::cout << "using strassen" << std::endl;
 		useStrassen = true;
 		
 		while(nn < na) nn = nn << 1;
@@ -64,16 +63,14 @@ int main(int argc, char* argv[])
 		memset(matB, 0, nn*nn*sizeof(double));
 	} else {
 		matA = new double[na*ma];
-		std::cout << na << "x" << ma << " Matrix erstellt" << std::endl;
 		matB = new double[nb*mb];
-		std::cout << nb << "x" << mb << " Matrix erstellt" << std::endl;
 	}
 	
 
 	for(int i = 0; i < ma; ++i){
 		for(int j = 0; j < na; ++j){
-			if(!std::getline(firstMatFile, line)){
-				std::cerr << "Unexpected end of file!" << std::endl;
+			if(!getline(firstMatFile, line)){
+				cerr << "Unexpected end of file!" << endl;
 				return 1;
 			}
 			matA[i*na + j] = atof(line.c_str());
@@ -83,8 +80,8 @@ int main(int argc, char* argv[])
 
 	for(int i = 0; i < mb; ++i){
 		for(int j = 0; j < nb; ++j){
-			if(!std::getline(secondMatFile, line)){
-				std::cerr << "Unexpected end of file!" << std::endl;
+			if(!getline(secondMatFile, line)){
+				cerr << "Unexpected end of file!" << endl;
 				return 1;
 			}
 			matB[i*nb + j] = atof(line.c_str());
@@ -93,7 +90,7 @@ int main(int argc, char* argv[])
 	secondMatFile.close();
 
 	if(na != mb){ 
-		std::cerr << "Die Spaltenanzahl der ersten Matrix (hier " << na << ") muss gleich der Zeilenanzahl der zweiten Matrix (hier " << mb << ") sein!" << std::endl;
+		cerr << "Die Spaltenanzahl der ersten Matrix (hier " << na << ") muss gleich der Zeilenanzahl der zweiten Matrix (hier " << mb << ") sein!" << endl;
 		return 1;
 	}
 
@@ -101,19 +98,18 @@ int main(int argc, char* argv[])
 	int mc = ma;
 	double* matC = new double[nc*mc];
 
- 
+/* 
 #ifdef USE_LIKWID
 	likwid_markerInit();
 	likwid_markerStartRegion("matmult");
 #endif
+*/
 
 
 	siwir::Timer timer;
 
 
 	if(!useStrassen){
-		std::cout << na << ma << nb << mb << nc << mc << std::endl;
-
 
 		for(int j = 0; j  < nc; ++j){						// ueber die Spalten von matC
 			for(int i = 0; i  < mc; ++i){					// ueber die Zeilen von matC
@@ -126,21 +122,21 @@ int main(int argc, char* argv[])
 		
 		//Strassen-Algorithmus - nur fuer grosse und quadratische matrizen
 		
-		std::cout << "Strassen not implemented yet!!!" << std::endl;	
-		
 		int nnh = nn/2;
 
 		int offset = nnh*nnh;
 		double* M = new double[offset*7];
-		memset(M, 0, offset*7*sizeof(double));
+		memset(M, 0, offset*7*sizeof(double)); //TODO needed?
+		
+		
+		double* M1 = M + offset*0;
+		double* M2 = M + offset*1;
+		double* M3 = M + offset*2;
+		double* M4 = M + offset*3;
+		double* M5 = M + offset*4;
+		double* M6 = M + offset*5;
+		double* M7 = M + offset*6;
 
-		double* M1 = M;
-		double* M2 = M1 + offset;
-		double* M3 = M2 + offset;
-		double* M4 = M3 + offset;
-		double* M5 = M4 + offset;
-		double* M6 = M5 + offset;
-		double* M7 = M6 + offset;
 
 		for(int j = 0; j < nnh; ++j){
 			for(int i = 0; i < nnh; ++i){
@@ -177,34 +173,35 @@ int main(int argc, char* argv[])
 		
 		/*	
 		for(int i = 0; i < 7; ++i){
-			std::cout << "M" << i+1 << ":" << std::endl;
+			cout << "M" << i+1 << ":" << endl;
 			for(int j = 0; j < nnh; ++j){
 				for(int k = 0; k < nnh; ++k){
-					std::cout << M[i*nnh*nnh + j*nnh + k] << " ";
+					cout << M[i*nnh*nnh + j*nnh + k] << " ";
 				}
-				std::cout << std::endl;
+				cout << endl;
 			}
 		}
 		*/
 	}
 
    	double time = timer.elapsed();
-   
+
+/*
 #ifdef USE_LIKWID
 	likwid_markerStopRegion("matmult");
 	likwid_markerClose();
 #endif  
-
+*/
 
 	
-	std::ofstream outfile(argv[3]);
-	outfile << mc << " " << nc << std::endl;
+	ofstream outfile(argv[3]);
+	outfile << mc << " " << nc << endl;
 
 	for(int i = 0; i < nc*mc; ++i){
-		outfile << matC[i] << std::endl;
+		outfile << matC[i] << endl;
 	}
 
 	outfile.close();
    
-    std::cout << "Calculation took " << time << " seconds\n";  
+    cout << "Calculation took " << time << " seconds" << endl;  
 }
