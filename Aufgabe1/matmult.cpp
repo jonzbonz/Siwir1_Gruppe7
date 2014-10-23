@@ -126,8 +126,6 @@ int main(int argc, char* argv[])
 
 		int offset = nnh*nnh;
 		double* M = new double[offset*7];
-		memset(M, 0, offset*7*sizeof(double)); //TODO needed?
-		
 		
 		double* M1 = M + offset*0;
 		double* M2 = M + offset*1;
@@ -142,6 +140,13 @@ int main(int argc, char* argv[])
 			for(int i = 0; i < nnh; ++i){
 				
 				int pos = i*nnh + j;
+				M1[pos] = 0;
+				M2[pos] = 0;
+				M3[pos] = 0;
+				M4[pos] = 0;
+				M5[pos] = 0;
+				M6[pos] = 0;
+				M7[pos] = 0;
 
 				for(int k = 0; k < nnh; ++k){
 					//(A11 + A22) * (B11 + B22)
