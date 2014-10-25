@@ -15,6 +15,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <x86intrin.h>
+
 using namespace std;
  
 #ifdef USE_LIKWID
@@ -238,51 +240,47 @@ void strassenMult(double* matA, double* matB, double* matC, int nn){
 	}
 	*/
 
-	//TODO diese schleife ist manchmal schneller als ganz viele in folge --> loop fusion
-	//manchmal aber auch nicht! Wenn cacheeffekte auftreten!
-	//--> je nachdem eine version schreiben
-	//wahrscheinlich wird es sinn machen, die A und B werte in zwei schleifen zu berechen (wegen innerer Schleife)
+	if(nnh%4 != 0){
+		cerr << "nnh ist nicht durch 4 teilbar!!! Threshold zu klein?" << endl;
+		exit(-1);
+	}
+
 	int pos = -1;
 	for(int i = 0; i < nnh; ++i){
-		for(int j = 0; j < nnh; ++j){
-			pos++;
-				
-			//  0  1  |  2  3
-			//  4  5  |  6  7
-			//  -------------
-			//  8  9  | 10 11
-			//  12 13 | 14 15
+		for(int j = 0; j < nnh; j+=4){ //AVX!
+			pos+=4;	
 			
 			//TODO umsortieren? Oder macht das der Compiler?
-			double A11 = matA[i*nn + j];
-			double A12 = matA[i*nn + j + nnh];
-			double A21 = matA[(i+nnh)*nn + j];
-			double A22 = matA[(i+nnh)*nn + j + nnh];
-			double B11 = matB[i*nn + j];
-			double B12 = matB[i*nn + j + nnh];
-			double B21 = matB[(i+nnh)*nn + j];
-			double B22 = matB[(i+nnh)*nn + j + nnh];
+			__m265d A11 = _mm256_load_pd(matA + i*nn + j);
+			__m265d A12 = _mm256_load_pd(matA + i*nn + j + nnh);
+			__m265d A21 = _mm256_load_pd(matA + (i+nnh)*nn + j);
+			__m265d A22 = _mm256_load_pd(matA + (i+nnh)*nn + j + nnh);
+			__m265d B11 = _mm256_load_pd(matB + i*nn + j);
+			__m265d B12 = _mm256_load_pd(matB + i*nn + j + nnh);
+			__m265d B21 = _mm256_load_pd(matB + (i+nnh)*nn + j);
+			__m265d B22 = _mm256_load_pd(matB + (i+nnh)*nn + j + nnh);
 
-			matT[0*nnhq + pos] = A11 + A22;
-			matT[1*nnhq + pos] = B11 + B22;
 
-			matT[2*nnhq + pos] = A21 + A22;
-			matT[3*nnhq + pos] = B11;
+			_mm256_store_pd(matT + 0*nnhq + pos, _mm256_add_pd(A11, A22));
+			_mm256_store_pd(matT + 1*nnhq + pos, _mm256_add_pd(B11, B22));
 
-			matT[4*nnhq + pos] = A11;
-			matT[5*nnhq + pos] = B12 - B22;
+			_mm256_store_pd(matT + 2*nnhq + pos, _mm256_add_pd(A21, A22));
+			_mm256_store_pd(matT + 3*nnhq + pos, B11);
 
-			matT[6*nnhq + pos] = A22;
-			matT[7*nnhq + pos] = B21 - B11;
+			_mm256_store_pd(matT + 4*nnhq + pos, A11);
+			_mm256_store_pd(matT + 5*nnhq + pos, _mm256_sub_pd(B12, B22));
 
-			matT[8*nnhq + pos] = A11 + A12;
-			matT[9*nnhq + pos] = B22;
+			_mm256_store_pd(matT + 6*nnhq + pos, A22);
+			_mm256_store_pd(matT + 7*nnhq + pos, _mm256_sub_pd(B21, B11));
 
-			matT[10*nnhq + pos] = A21 - A11;
-			matT[11*nnhq + pos] = B11 + B12;
+			_mm256_store_pd(matT + 8*nnhq + pos, _mm256_add_pd(A11, A12));
+			_mm256_store_pd(matT + 9*nnhq + pos, B22);
 
-			matT[12*nnhq + pos] = A12 - A22;
-			matT[13*nnhq + pos] = B21 + B22;
+			_mm256_store_pd(matT + 10*nnhq + pos, _mm256_sub_pd(A21, A11));
+			_mm256_store_pd(matT + 11*nnhq + pos, _mm256_add_pd(B11, B12));
+
+			_mm256_store_pd(matT + 12*nnhq + pos, _mm256_sub_pd(A12, A22));
+			_mm256_store_pd(matT + 13*nnhq + pos, _mm256_add_pd(B21, B22));
 
 		}
 	}
