@@ -23,7 +23,9 @@ extern "C" {
 }
 #endif
 
-#define THRESHOLD 32
+//PROBABLY 32 is best, bc its only slightly slower then 16 (which gives best performance for 1024x1024)
+//but you need much less ram then with 16
+#define THRESHOLD 16
 
 inline void naiveMatmult(double* matA, double* matB, double* matC, int nc, int mc, int na);
 
@@ -39,7 +41,7 @@ int main(int argc, char* argv[])
 		cerr << "Usage: ./matmult A.in B.in C.out" << endl;
 		return 1;
 	}
-
+	cout << "with Threshold " << THRESHOLD << endl;
 	//Reading input / creating matrices
 	double* matA = 0;
 	double* matB = 0;
@@ -129,7 +131,7 @@ int main(int argc, char* argv[])
 		naiveMatmult(matA, matB, matC, nc, mc, na);
 
 	} else {
-		cout << "using strassen" << endl;	
+		//cout << "using strassen" << endl;	
 		//Strassen-Algorithmus - nur fuer grosse und quadratische matrizen
 		strassenMult(matA, matB, matC, nn);
 	}
@@ -170,6 +172,7 @@ inline void naiveMatmult(double* matA, double* matB, double* matC, int nc, int m
 
 inline void naiveMatmultQ(double* matA, double* matB, double* matC, int nn){
 	//cout << "multiplying two " << nn << "x" << nn << " matrices..." << endl;
+
 	for(int j = 0; j < nn; ++j){							// ueber die Spalten von matC
 		for(int i = 0; i  < nn; ++i){						// ueber die Zeilen von matC
 			for(int k = 0;  k  < nn; ++k){					// ueber die Spalten von matA / Zeilen von matB
