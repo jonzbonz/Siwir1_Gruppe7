@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <x86intrin.h>
+//#include "immintrin.h"
 
 using namespace std;
  
@@ -28,6 +28,7 @@ extern "C" {
 //PROBABLY 32 is best, bc its only slightly slower then 16 (which gives best performance for 1024x1024)
 //but you need much less ram then with 16
 #define THRESHOLD 16
+#define ALIGNMENT 32 //for AVX
 
 inline void naiveMatmult(double* matA, double* matB, double* matC, int nc, int mc, int na);
 
@@ -35,7 +36,11 @@ inline void naiveMatmultQ(double* matA, double* matB, double* matC, int nn);
 
 inline void naiveMatmultTQ(double* matA, double* matB, double* matC, int nn); //(Q for quadratic), matB has to be transposed!, currently bugged
 
-void strassenMult(double* matA,double* matB,double* matC,int nn);
+void strassenMult(double* matA, double* matB, double* matC, int nn);
+
+//void align(void** pointer){
+//	
+//}
 
 int main(int argc, char* argv[])
 {
@@ -45,8 +50,8 @@ int main(int argc, char* argv[])
 	}
 	cout << "with Threshold " << THRESHOLD << endl;
 	//Reading input / creating matrices
-	double* matA = 0;
-	double* matB = 0;
+	double* matA = NULL;
+	double* matB = NULL;
 	int na, ma, nb, mb;
 
 	string line;
@@ -84,7 +89,16 @@ int main(int argc, char* argv[])
 	}
 	
 	matA = new double[na*ma];
+	//align(&matA);
+	//out << matA << " after" << endl;
+
+	//matA = NULL;
+	//posix_memalign((void**)&matA, ALIGNMENT, na*ma*sizeof(double));
+
+	//cout << "Geschafft!" << endl << "&matA = " << matA << endl;
 	matB = new double[nb*mb];
+	//matB = NULL;
+	//posix_memalign((void**)&matB, ALIGNMENT, nb*mb*sizeof(double));
 
 
 	for(int i = 0; i < ma; ++i){
@@ -113,6 +127,8 @@ int main(int argc, char* argv[])
 
 	int nc = nb;
 	int mc = ma;
+	//double* matC = NULL;
+	//posix_memalign((void**)&matC, ALIGNMENT, nc*mc*sizeof(double));//
 	double* matC = new double[nc*mc];
 	memset(matC, 0, nc*mc*sizeof(double));
 
@@ -202,10 +218,14 @@ void strassenMult(double* matA, double* matB, double* matC, int nn){
 	int nnh = nn/2;
 
 	int nnhq = nnh*nnh; // = nn halb quadrat
+
+
+	//double* M = NULL;
+	//posix_memalign((void**)&M, ALIGNMENT, nnhq*7*sizeof(double));//
 	
 	double* M = new double[nnhq*7];
-	
-	memset(M, 0, nnhq*7);
+
+	memset(M, 0, nnhq*7*sizeof(double));
 
 	double* M1 = M + nnhq*0;
 	double* M2 = M + nnhq*1;
@@ -223,8 +243,12 @@ void strassenMult(double* matA, double* matB, double* matC, int nn){
 	// Dafuer sollten untereinanderstehende Matritzen auch nacheinander im Cache stehen (Meint Joni)
 	// Diese werden naemlich anschließend miteinander multipliziert, um M zu erhalten
 	// Die entstehende Matrix nennen wir matT (für temp)
+	
 
+	//double* matT = NULL;
+	//posix_memalign((void**)&matT, ALIGNMENT, 7*2*nnhq);
 	double* matT = new double[7*2*nnhq]; //nn = größe z.b. von matA, nnh = hälfte davon, nnhq = quadrat von nnh --> Größe von A11 z.b.
+	
 	//cout << "Matrix ist " << (7*2*nnhq*sizeof(double)/(1024*1024.0f)) << "MByte groß!" << endl;
 	memset(matT, 0, 7*2*nnhq*sizeof(double));
 
@@ -244,45 +268,93 @@ void strassenMult(double* matA, double* matB, double* matC, int nn){
 		cerr << "nnh ist nicht durch 4 teilbar!!! Threshold zu klein?" << endl;
 		exit(-1);
 	}
+	
+	/*cout << matA << endl;
+	cout << matB << endl;
+	cout << matC << endl;
+	cout << matT << endl;
+	cout << M << endl;*/
 
-	int pos = -1;
+
+	int pos = -1; //TODO -4 for AVX
 	for(int i = 0; i < nnh; ++i){
-		for(int j = 0; j < nnh; j+=4){ //AVX!
-			pos+=4;	
-			
-			//TODO umsortieren? Oder macht das der Compiler?
-			__m265d A11 = _mm256_load_pd(matA + i*nn + j);
-			__m265d A12 = _mm256_load_pd(matA + i*nn + j + nnh);
-			__m265d A21 = _mm256_load_pd(matA + (i+nnh)*nn + j);
-			__m265d A22 = _mm256_load_pd(matA + (i+nnh)*nn + j + nnh);
-			__m265d B11 = _mm256_load_pd(matB + i*nn + j);
-			__m265d B12 = _mm256_load_pd(matB + i*nn + j + nnh);
-			__m265d B21 = _mm256_load_pd(matB + (i+nnh)*nn + j);
-			__m265d B22 = _mm256_load_pd(matB + (i+nnh)*nn + j + nnh);
+		for(int j = 0; j < nnh; ++j){
+			pos++;
+			double A11 = matA[i*nn + j];
+			double A12 = matA[i*nn + j + nnh];
+			double A21 = matA[(i+nnh)*nn + j];
+			double A22 = matA[(i+nnh)*nn + j + nnh];
+			double B11 = matB[i*nn + j];
+			double B12 = matB[i*nn + j + nnh];
+			double B21 = matB[(i+nnh)*nn + j];
+			double B22 = matB[(i+nnh)*nn + j + nnh];
 
+			matT[0*nnhq + pos] = A11 + A22;
+			matT[1*nnhq + pos] = B11 + B22;
 
-			_mm256_store_pd(matT + 0*nnhq + pos, _mm256_add_pd(A11, A22));
-			_mm256_store_pd(matT + 1*nnhq + pos, _mm256_add_pd(B11, B22));
+			matT[2*nnhq + pos] = A21 + A22;
+			matT[3*nnhq + pos] =  B11;
 
-			_mm256_store_pd(matT + 2*nnhq + pos, _mm256_add_pd(A21, A22));
-			_mm256_store_pd(matT + 3*nnhq + pos, B11);
+			matT[4*nnhq + pos] = A11;
+			matT[5*nnhq + pos] = B12 - B22;
 
-			_mm256_store_pd(matT + 4*nnhq + pos, A11);
-			_mm256_store_pd(matT + 5*nnhq + pos, _mm256_sub_pd(B12, B22));
+			matT[6*nnhq + pos] = A22;
+			matT[7*nnhq + pos] = B21 - B11;
 
-			_mm256_store_pd(matT + 6*nnhq + pos, A22);
-			_mm256_store_pd(matT + 7*nnhq + pos, _mm256_sub_pd(B21, B11));
+			matT[8*nnhq + pos] = A11 + A12;
+			matT[9*nnhq + pos] = B22;
 
-			_mm256_store_pd(matT + 8*nnhq + pos, _mm256_add_pd(A11, A12));
-			_mm256_store_pd(matT + 9*nnhq + pos, B22);
+			matT[10*nnhq + pos] = A21 - A11;
+			matT[11*nnhq + pos] = B11 + B12;
 
-			_mm256_store_pd(matT + 10*nnhq + pos, _mm256_sub_pd(A21, A11));
-			_mm256_store_pd(matT + 11*nnhq + pos, _mm256_add_pd(B11, B12));
+			matT[12*nnhq + pos] = A12 - A22;
+			matT[13*nnhq + pos] = B21 + B22;		
+		}	
+		
+		/*for(int j = 0; j < nnh; j+=4){ //AVX!
+			pos += 4;
+			//TODO align to 32
+			__m256d A11 = _mm256_loadu_pd(&matA[i*nn + j]);
+			__m256d A12 = _mm256_loadu_pd(&matA[i*nn + j + nnh]);
+			__m256d A21 = _mm256_loadu_pd(&matA[(i+nnh)*nn + j]);
+			__m256d A22 = _mm256_loadu_pd(&matA[(i+nnh)*nn + j + nnh]);
+			__m256d B11 = _mm256_loadu_pd(&matB[i*nn + j]);
+			__m256d B12 = _mm256_loadu_pd(&matB[i*nn + j + nnh]);
+			__m256d B21 = _mm256_loadu_pd(&matB[(i+nnh)*nn + j]);
+			__m256d B22 = _mm256_loadu_pd(&matB[(i+nnh)*nn + j + nnh]);
 
-			_mm256_store_pd(matT + 12*nnhq + pos, _mm256_sub_pd(A12, A22));
-			_mm256_store_pd(matT + 13*nnhq + pos, _mm256_add_pd(B21, B22));
+			__m256d tmp0 = _mm256_add_pd(A11, A22);
+			_mm256_storeu_pd(&matT[0*nnhq + pos], tmp0);
+			__m256d tmp1 = _mm256_add_pd(B11, B22);
+			_mm256_storeu_pd(&matT[1*nnhq + pos], tmp1);
 
+			__m256d tmp2 = _mm256_add_pd(A21, A22);
+			_mm256_storeu_pd(&matT[2*nnhq + pos], tmp2);
+			_mm256_storeu_pd(&matT[3*nnhq + pos], B11);
+
+			_mm256_storeu_pd(&matT[4*nnhq + pos], A11);
+			__m256d tmp5 = _mm256_sub_pd(B12, B22);
+			_mm256_storeu_pd(&matT[5*nnhq + pos], tmp5);
+
+			_mm256_storeu_pd(&matT[6*nnhq + pos], A22);
+			__m256d tmp7 = _mm256_sub_pd(B21, B11);
+			_mm256_storeu_pd(&matT[7*nnhq + pos], tmp7);
+
+			__m256d tmp8 = _mm256_add_pd(A11, A12);
+			_mm256_storeu_pd(&matT[8*nnhq + pos], tmp8);
+			_mm256_storeu_pd(&matT[9*nnhq + pos], B22);
+
+			__m256d tmp10 = _mm256_sub_pd(A21, A11);
+			_mm256_storeu_pd(&matT[10*nnhq + pos], tmp10);
+			__m256d tmp11 = _mm256_add_pd(B11, B12);
+			_mm256_storeu_pd(&matT[11*nnhq + pos], tmp11);
+
+			__m256d tmp12 = _mm256_sub_pd(A12, A22);
+			_mm256_storeu_pd(&matT[12*nnhq + pos], tmp12);
+			__m256d tmp13 = _mm256_add_pd(B21, B22);
+			_mm256_storeu_pd(&matT[13*nnhq + pos], tmp13);
 		}
+		*/
 	}
 	
 	//Not needed any more
