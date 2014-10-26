@@ -1,16 +1,16 @@
 CXX = g++
-CXXFLAGS = -std=c++11 -g -Wall -Wextra -Wshadow -Werror -O3 -DNDEBUG -march=native
+CXXFLAGS = -std=c++0x -g -Wall -Wextra -Wshadow -Werror -O3 -DNDEBUG -march=native
 
 INCLUDES =
 LDFLAGS =
 LIBS =
 
 
-##likwid
-#CXXFLAGS += -DUSE_LIKWID -pthread
-#INCLUDES += -I/usr/local/likwid-3.1.2/include/
-#LDFLAGS += -L/usr/local/likwid-3.1.2/lib/
-#LIBS += -llikwid
+#likwid
+CXXFLAGS += -DUSE_LIKWID -pthread
+INCLUDES += -I/usr/local/likwid-3.1.2/include/
+LDFLAGS += -L/usr/local/likwid-3.1.2/lib/
+LIBS += -llikwid
 
 TARGET = matmult
 OBJS = $(TARGET).o
@@ -30,6 +30,7 @@ run: $(TARGET)
 	./$(TARGET) A.in B.in C.out
 
 likwid: $(TARGET)
+	rm -f likwid.log
 	./likwidScript >> likwid.log
 
 perfClean:

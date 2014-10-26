@@ -14,7 +14,7 @@ do
 	echo Measuring performance for event group $i \
 	     using the marker api...
 
-	likwid-perfctr -C $CORE -g $i -m ./$PROGRAM Matrices/testMatrices/A2.in Matrices/testMatrices/B2.in C.out 
+	likwid-perfctr -C $CORE -g $i -m ./$PROGRAM Matrices/perfMatrices/2048x2048-1 Matrices/perfMatrices/2048x2048-2 C.out 
 
 	echo ================================================================================
 	echo

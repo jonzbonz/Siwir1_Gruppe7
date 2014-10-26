@@ -1,35 +1,21 @@
+Calculating 32x32
+with Threshold 128
+Calculation took 2.3e-05 seconds
+Calculating 64x64
+with Threshold 128
+Calculation took 0.000259 seconds
+Calculating 128x128
+with Threshold 128
+Calculation took 0.000644 seconds
+Calculating 256x256
+with Threshold 128
+Calculation took 0.005534 seconds
+Calculating 512x512
+with Threshold 128
+Calculation took 0.040843 seconds
 Calculating 1024x1024
-with Threshold 16
-Calculation took 1.10833 seconds
-Calculating 1024x1024
-with Threshold 16
-Calculating 1024x1024
-with Threshold 16
-Calculating 64x64
-with Threshold 16
-0x1de5800
-0x1dedc00
-0x1df6000
-0x1de1400
-0x1dfe400
-Calculating 64x64
-with Threshold 16
-0x216b4e0
-0x2173520
-0x217b5c0
-0x2167040
-0x2183620
-Calculating 64x64
-with Threshold 16
-0x22ad4e0
-0x22b5520
-0x22bd5c0
-0x22a9040
-0x22c5620
-Calculating 64x64
-with Threshold 16
-0xe8a4e0
-0xe92520
-0xe9a5c0
-0xe86040
-0xea2620
+with Threshold 128
+Calculation took 0.293747 seconds
+Calculating 2048x2048
+with Threshold 128
+Calculation took 2.09568 seconds
