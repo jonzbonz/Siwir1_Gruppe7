@@ -1,21 +1,21 @@
 Calculating 32x32
 with Threshold 128
-Calculation took 2.3e-05 seconds
+Calculation took 2.8e-05 seconds
 Calculating 64x64
 with Threshold 128
-Calculation took 0.000259 seconds
+Calculation took 8.7e-05 seconds
 Calculating 128x128
 with Threshold 128
-Calculation took 0.000644 seconds
+Calculation took 0.000624 seconds
 Calculating 256x256
 with Threshold 128
-Calculation took 0.005534 seconds
+Calculation took 0.005399 seconds
 Calculating 512x512
 with Threshold 128
-Calculation took 0.040843 seconds
+Calculation took 0.038875 seconds
 Calculating 1024x1024
 with Threshold 128
-Calculation took 0.293747 seconds
+Calculation took 0.276535 seconds
 Calculating 2048x2048
 with Threshold 128
-Calculation took 2.09568 seconds
+Calculation took 1.97153 seconds
