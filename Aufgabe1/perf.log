@@ -1,21 +1,42 @@
 Calculating 32x32
 with Threshold 128
-Calculation took 2.8e-05 seconds
+Calculation took 2.1e-05 seconds
+It spent 1.9e-05 seconds of that with naive matrix multiplication!
+That equals 90.4762 percent of the time!
+
 Calculating 64x64
 with Threshold 128
-Calculation took 8.7e-05 seconds
+Calculation took 7.7e-05 seconds
+It spent 6.5e-05 seconds of that with naive matrix multiplication!
+That equals 84.4156 percent of the time!
+
 Calculating 128x128
 with Threshold 128
-Calculation took 0.000624 seconds
+Calculation took 0.00066 seconds
+It spent 0.000642 seconds of that with naive matrix multiplication!
+That equals 97.2727 percent of the time!
+
 Calculating 256x256
 with Threshold 128
-Calculation took 0.005399 seconds
+Calculation took 0.005265 seconds
+It spent 0.004468 seconds of that with naive matrix multiplication!
+That equals 84.8623 percent of the time!
+
 Calculating 512x512
 with Threshold 128
-Calculation took 0.038875 seconds
+Calculation took 0.038677 seconds
+It spent 0.030716 seconds of that with naive matrix multiplication!
+That equals 79.4167 percent of the time!
+
 Calculating 1024x1024
 with Threshold 128
-Calculation took 0.276535 seconds
+Calculation took 0.276368 seconds
+It spent 0.213493 seconds of that with naive matrix multiplication!
+That equals 77.2495 percent of the time!
+
 Calculating 2048x2048
 with Threshold 128
-Calculation took 1.97153 seconds
+Calculation took 1.96707 seconds
+It spent 1.49648 seconds of that with naive matrix multiplication!
+That equals 76.0768 percent of the time!
+

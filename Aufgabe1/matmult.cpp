@@ -38,6 +38,7 @@ void strassenMult(double* matA, double* matB, double* matC, int nn);
 //void align(void** pointer){
 //	
 //}
+double matMultTime = 0;
 
 int main(int argc, char* argv[])
 {
@@ -175,7 +176,9 @@ int main(int argc, char* argv[])
    
 	delete[] matC;
 
-    cout << "Calculation took " << time << " seconds" << endl;  
+    cout << "Calculation took " << time << " seconds" << endl;
+	cout << "It spent " <<  matMultTime << " seconds of that with naive matrix multiplication!" << endl;
+	cout << "That equals " << (float)(100*matMultTime/time) << " percent of the time!" << endl << endl;
 }
 
 inline void naiveMatmult(double* matA, double* matB, double* matC, int nc, int mc, int na){
@@ -223,11 +226,32 @@ inline void naiveMatmultQ(double* matA, double* matB, double* matC, int nn){
 			matC[i*nn + j] = temp[0] + temp[1] + temp[2] + temp[3];
 		}
 	}
+	
+	/*double* temp = new double[4];
+	for(int j = 0; j < nn; ++j){
+		for(int i = 0; i < nn; ++i){							// ueber die Zeilen und spalten von matC
+			__m256d sum = _mm256_setzero_pd();
+			for(int k = 0; k < nn; k+=4){						// ueber die Spalten von matA / Zeilen von matB
+				__m256d A = _mm256_loadu_pd(&matA [i*nn + k]);
+				__m256d B = _mm256_loadu_pd(&matBT[j*nn + k]);
+				__m256d C = _mm256_mul_pd(A, B);
+				
+				sum = _mm256_add_pd(sum, C);
+			}
+			_mm256_storeu_pd(temp, sum);
+			matC[i*nn + j] = temp[0] + temp[1] + temp[2] + temp[3];
+		}
+	}*/
 }
+
+
 
 inline void naiveMatmultTQ(double* matA, double* matBT, double* matC, int nn){
 	//matA and matB have to be 32 aligned!!!
 	//double* temp = new double[4];
+	
+	siwir::Timer timer;
+
 	double* temp = NULL;
 	posix_memalign((void**)&temp, 32, 4*sizeof(double));
 
@@ -245,6 +269,8 @@ inline void naiveMatmultTQ(double* matA, double* matBT, double* matC, int nn){
 			matC[i*nn + j] = temp[0] + temp[1] + temp[2] + temp[3];
 		}
 	}
+
+	matMultTime += timer.elapsed();
 }
 
 void strassenMult(double* matA, double* matB, double* matC, int nn){
