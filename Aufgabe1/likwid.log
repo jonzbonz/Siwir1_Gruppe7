@@ -3,9 +3,9 @@ Profiling program matmult on core 0
 
 Measuring performance for event group FLOPS_DP using the marker api...
 with Threshold 64
-Calculation took 1.41459 seconds
-It spent 1.00128 seconds of that with naive matrix multiplication!
-That equals 70.7826 percent of the time!
+Calculation took 1.02496 seconds
+It spent 0.610395 seconds of that with naive matrix multiplication!
+That equals 59.5531 percent of the time!
 
 -------------------------------------------------------------
 -------------------------------------------------------------
@@ -18,41 +18,41 @@ Measuring group FLOPS_DP
 =====================
 Region: matmult 
 =====================
-+-------------------+--------+
-|    Region Info    | core 0 |
-+-------------------+--------+
-| RDTSC Runtime [s] | 1.4146 |
-|    call count     |   1    |
-+-------------------+--------+
++-------------------+---------+
+|    Region Info    | core 0  |
++-------------------+---------+
+| RDTSC Runtime [s] | 1.02499 |
+|    call count     |    1    |
++-------------------+---------+
 +--------------------------------------+-------------+
 |                Event                 |   core 0    |
 +--------------------------------------+-------------+
-|          INSTR_RETIRED_ANY           | 8.04209e+09 |
-|        CPU_CLK_UNHALTED_CORE         | 5.2179e+09  |
-|         CPU_CLK_UNHALTED_REF         | 4.68574e+09 |
+|          INSTR_RETIRED_ANY           | 2.9761e+09  |
+|        CPU_CLK_UNHALTED_CORE         | 3.73435e+09 |
+|         CPU_CLK_UNHALTED_REF         | 3.35022e+09 |
 | FP_COMP_OPS_EXE_SSE_FP_PACKED_DOUBLE |      0      |
-| FP_COMP_OPS_EXE_SSE_FP_SCALAR_DOUBLE | 2.21852e+08 |
-|      SIMD_FP_256_PACKED_DOUBLE       | 2.64082e+09 |
+| FP_COMP_OPS_EXE_SSE_FP_SCALAR_DOUBLE | 2.15332e+08 |
+|      SIMD_FP_256_PACKED_DOUBLE       | 1.91318e+09 |
 +--------------------------------------+-------------+
-+----------------------+----------+
-|        Metric        |  core 0  |
-+----------------------+----------+
-| Runtime (RDTSC) [s]  |  1.4146  |
-| Runtime unhalted [s] | 1.53815  |
-|     Clock [MHz]      | 3777.59  |
-|         CPI          | 0.648823 |
-|       MFlops/s       |  156.83  |
-|   32b AVX MFlops/s   | 7467.31  |
-|    Packed MUOPS/s    | 1866.83  |
-|    Scalar MUOPS/s    |  156.83  |
-+----------------------+----------+
++----------------------+---------+
+|        Metric        | core 0  |
++----------------------+---------+
+| Runtime (RDTSC) [s]  | 1.02499 |
+| Runtime unhalted [s] | 1.10082 |
+|     Clock [MHz]      | 3781.3  |
+|         CPI          | 1.25478 |
+|       MFlops/s       | 210.083 |
+|   32b AVX MFlops/s   | 7466.19 |
+|    Packed MUOPS/s    | 1866.55 |
+|    Scalar MUOPS/s    | 210.083 |
++----------------------+---------+
 ================================================================================
 
 Measuring performance for event group L2 using the marker api...
 with Threshold 64
-Calculation took 1.42525 seconds
-It spent 1.00966 seconds of that with naive matrix multiplication!
-That equals 70.8406 percent of the time!
+Calculation took 1.01153 seconds
+It spent 0.600264 seconds of that with naive matrix multiplication!
+That equals 59.3423 percent of the time!
 
 -------------------------------------------------------------
 -------------------------------------------------------------
@@ -68,37 +68,37 @@ Region: matmult
 +-------------------+---------+
 |    Region Info    | core 0  |
 +-------------------+---------+
-| RDTSC Runtime [s] | 1.42527 |
+| RDTSC Runtime [s] | 1.01154 |
 |    call count     |    1    |
 +-------------------+---------+
 +-----------------------+-------------+
 |         Event         |   core 0    |
 +-----------------------+-------------+
-|   INSTR_RETIRED_ANY   | 8.04209e+09 |
-| CPU_CLK_UNHALTED_CORE | 5.22079e+09 |
-| CPU_CLK_UNHALTED_REF  | 4.69352e+09 |
-|    L1D_REPLACEMENT    |  2.76e+08   |
-|      L1D_M_EVICT      | 6.78004e+07 |
+|   INSTR_RETIRED_ANY   | 2.9761e+09  |
+| CPU_CLK_UNHALTED_CORE | 3.7039e+09  |
+| CPU_CLK_UNHALTED_REF  | 3.31605e+09 |
+|    L1D_REPLACEMENT    | 2.29668e+08 |
+|      L1D_M_EVICT      | 6.79602e+07 |
 +-----------------------+-------------+
-+-------------------------+----------+
-|         Metric          |  core 0  |
-+-------------------------+----------+
-|   Runtime (RDTSC) [s]   | 1.42527  |
-|  Runtime unhalted [s]   |  1.539   |
-|       Clock [MHz]       | 3773.42  |
-|           CPI           | 0.649184 |
-|   L2 Load [MBytes/s]    | 12393.5  |
-|   L2 Evict [MBytes/s]   |  3044.5  |
-| L2 bandwidth [MBytes/s] |  15438   |
-| L2 data volume [GBytes] | 22.0033  |
-+-------------------------+----------+
++-------------------------+---------+
+|         Metric          | core 0  |
++-------------------------+---------+
+|   Runtime (RDTSC) [s]   | 1.01154 |
+|  Runtime unhalted [s]   | 1.09186 |
+|       Clock [MHz]       | 3789.04 |
+|           CPI           | 1.24455 |
+|   L2 Load [MBytes/s]    | 14531.1 |
+|   L2 Evict [MBytes/s]   | 4299.85 |
+| L2 bandwidth [MBytes/s] |  18831  |
+| L2 data volume [GBytes] | 19.0482 |
++-------------------------+---------+
 ================================================================================
 
 Measuring performance for event group L2CACHE using the marker api...
 with Threshold 64
-Calculation took 1.42711 seconds
-It spent 1.01514 seconds of that with naive matrix multiplication!
-That equals 71.1325 percent of the time!
+Calculation took 1.0139 seconds
+It spent 0.600575 seconds of that with naive matrix multiplication!
+That equals 59.234 percent of the time!
 
 -------------------------------------------------------------
 -------------------------------------------------------------
@@ -114,28 +114,28 @@ Region: matmult
 +-------------------+---------+
 |    Region Info    | core 0  |
 +-------------------+---------+
-| RDTSC Runtime [s] | 1.42712 |
+| RDTSC Runtime [s] | 1.01392 |
 |    call count     |    1    |
 +-------------------+---------+
 +-----------------------+-------------+
 |         Event         |   core 0    |
 +-----------------------+-------------+
-|   INSTR_RETIRED_ANY   | 8.04209e+09 |
-| CPU_CLK_UNHALTED_CORE | 5.2547e+09  |
-| CPU_CLK_UNHALTED_REF  | 4.70806e+09 |
-| L2_TRANS_ALL_REQUESTS | 7.70503e+08 |
-|     L2_RQSTS_MISS     | 1.73335e+08 |
+|   INSTR_RETIRED_ANY   | 2.9761e+09  |
+| CPU_CLK_UNHALTED_CORE | 3.7098e+09  |
+| CPU_CLK_UNHALTED_REF  | 3.33297e+09 |
+| L2_TRANS_ALL_REQUESTS | 7.08046e+08 |
+|     L2_RQSTS_MISS     | 1.73071e+08 |
 +-----------------------+-------------+
 +----------------------+-----------+
 |        Metric        |  core 0   |
 +----------------------+-----------+
-| Runtime (RDTSC) [s]  |  1.42712  |
-| Runtime unhalted [s] |   1.549   |
-|     Clock [MHz]      |  3786.2   |
-|         CPI          |  0.6534   |
-|   L2 request rate    | 0.0958087 |
-|     L2 miss rate     | 0.0215535 |
-|    L2 miss ratio     | 0.224963  |
+| Runtime (RDTSC) [s]  |  1.01392  |
+| Runtime unhalted [s] |  1.0936   |
+|     Clock [MHz]      |  3775.8   |
+|         CPI          |  1.24653  |
+|   L2 request rate    | 0.237911  |
+|     L2 miss rate     | 0.0581537 |
+|    L2 miss ratio     | 0.244435  |
 +----------------------+-----------+
 ================================================================================
 

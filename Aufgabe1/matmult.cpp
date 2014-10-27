@@ -212,41 +212,63 @@ inline void naiveMatmultTQ(double* matA, double* matBT, double* matC, int nn){
 inline void naiveMatmultTQ_fast(double* matA, double* matBT, double* matC){
 	siwir::Timer timer;
 
-	double* temp = NULL;
-	posix_memalign((void**)&temp, 32, 4*sizeof(double));
-
-	__m256d* sum = NULL;
-	posix_memalign((void**)&sum, 32, THRESHOLD*sizeof(__m256));
+	double* temp1 = NULL;
+	posix_memalign((void**)&temp1, 32, 4*sizeof(double));
+	double* temp2 = NULL;
+	posix_memalign((void**)&temp2, 32, 4*sizeof(double));
+	double* temp3 = NULL;
+	posix_memalign((void**)&temp3, 32, 4*sizeof(double));
+	double* temp4 = NULL;
+	posix_memalign((void**)&temp4, 32, 4*sizeof(double));
 	
 	for(int i = 0; i < THRESHOLD; ++i){
+		for(int j = 0; j < THRESHOLD; j+=4){
+			__m256d sum1 = _mm256_setzero_pd();
+			__m256d sum2 = _mm256_setzero_pd();
+			__m256d sum3 = _mm256_setzero_pd();
+			__m256d sum4 = _mm256_setzero_pd();
 		
-		for(int j = 0; j < THRESHOLD; j++){
-			sum[j] = _mm256_setzero_pd();
-		}
-		
-		for(int k = 0; k < THRESHOLD; k+=4){
-
-			__m256d A = _mm256_load_pd(&matA [i*THRESHOLD + k]);
-
-			for(int j = 0; j < THRESHOLD; ++j){
-				
-				__m256d B = _mm256_load_pd(&matBT[j*THRESHOLD + k]);
-				__m256d C = _mm256_mul_pd(A, B);
-				
-				sum[j] = _mm256_add_pd(sum[j], C);
-			}
+			for(int k = 0; k < THRESHOLD; k+=4){
+				__m256d A = _mm256_load_pd(&matA [i*THRESHOLD + k]);
 			
-			for(int j = 0; j < THRESHOLD; ++j){
-				_mm256_store_pd(temp, sum[j]);
-				matC[i*THRESHOLD + j] = temp[0] + temp[1] + temp[2] + temp[3];
-			}
+				__m256d B1 = _mm256_load_pd(&matBT[j*THRESHOLD + k]);
+				__m256d C1 = _mm256_mul_pd(A, B1);
+				
+				__m256d B2 = _mm256_load_pd(&matBT[(j+1)*THRESHOLD + k]);
+				__m256d C2 = _mm256_mul_pd(A, B2);
+
+				__m256d B3 = _mm256_load_pd(&matBT[(j+2)*THRESHOLD + k]);
+				__m256d C3 = _mm256_mul_pd(A, B3);
+				
+				__m256d B4 = _mm256_load_pd(&matBT[(j+3)*THRESHOLD + k]);
+				__m256d C4 = _mm256_mul_pd(A, B4);
+			
+				sum1 = _mm256_add_pd(sum1, C1);
+				sum2 = _mm256_add_pd(sum2, C2);
+				sum3 = _mm256_add_pd(sum3, C3);
+				sum4 = _mm256_add_pd(sum4, C4);
+			}		
+		
+			_mm256_store_pd(temp1, sum1);
+			matC[i*THRESHOLD + j] = temp1[0] + temp1[1] + temp1[2] + temp1[3];
+			
+			_mm256_store_pd(temp2, sum2);
+			matC[i*THRESHOLD + j + 1] = temp2[0] + temp2[1] + temp2[2] + temp2[3];
+			
+			_mm256_store_pd(temp3, sum3);
+			matC[i*THRESHOLD + j + 2] = temp3[0] + temp3[1] + temp3[2] + temp3[3];
+			
+			_mm256_store_pd(temp3, sum3);
+			matC[i*THRESHOLD + j + 3] = temp4[0] + temp4[1] + temp4[2] + temp4[3];
 		}
 	}
-		
-	free(sum);
-	free(temp);
 
+	free(temp1);
+	free(temp2);
+	free(temp3);
+	free(temp4);
 /*
+
 	double* sum = new double[THRESHOLD];
 	
 	for(int i = 0; i < THRESHOLD; ++i){
@@ -280,7 +302,7 @@ inline void naiveMatmultTQ_fast(double* matA, double* matBT, double* matC){
 
 void strassenMult(double* matA, double* matB, double* matC, int nn){
 	if(nn == THRESHOLD){
-		naiveMatmultTQ(matA, matB, matC, nn);
+		naiveMatmultTQ_fast(matA, matB, matC);
 		return;
 	} else if(nn < THRESHOLD){
 		cerr << "Duerfte nicht passieren!" << endl;

@@ -1,19 +1,16 @@
-Ohne AVX, optimiert:
-Calculation took 3.96485 seconds
-It spent 3.55627 seconds of that with naive matrix multiplication!
-That equals 89.6948 percent of the time!
-
 Calculating 2048x2048
 with Threshold 64
-Calculating 2048x2048
-with Threshold 64
-Calculation took 4.78859 seconds
-It spent 4.37939 seconds of that with naive matrix multiplication!
-That equals 91.4547 percent of the time!
+Calculation took 1.0045 seconds
+It spent 0.592725 seconds of that with naive matrix multiplication!
+That equals 59.007 percent of the time!
 
-Calculating 2048x2048
-with Threshold 64
-Calculation took 1.34998 seconds
-It spent 0.940416 seconds of that with naive matrix multiplication!
-That equals 69.6617 percent of the time!
-
+padding: yes (12)
+offsetA: no (0)
+offsetB: no (0)
+offsetC: no (0)
+alignment: yes (64)
+unrolling: yes (8)
+blocking: no (0)
+threshold: yes (64)
+strassen() [C style]: 1.08003 seconds
+Generating output: writing file C.out ...
