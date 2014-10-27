@@ -25,7 +25,8 @@ extern "C" {
 }
 #endif
 
-#define THRESHOLD 64
+#define THRESHOLD 512
+#define ALIGNMENT 32 //needed for AVX
 
 inline void naiveMatmult(double* matA, double* matB, double* matC, int nc, int mc, int na);
 
@@ -35,18 +36,20 @@ inline void naiveMatmultTQ_fast(double* matA, double* matTB, double* matC);
 
 void strassenMult(double* matA, double* matB, double* matC, int nn);
 
-double matMultTime = 0; //TODO delete
+//double matMultTime = 0; //TODO delete
 
 int main(int argc, char* argv[])
 {
 	if(argc != 4){
 		cerr << "Usage: ./matmult A.in B.in C.out" << endl;
-		return 1;
+		exit(1);
 	}
+
 	cout << "with Threshold " << THRESHOLD << endl;
+
 	//Reading input / creating matrices
-	double* matA = NULL;
-	double* matB = NULL;
+	double* matA;// = NULL;
+	double* matB;// = NULL;
 	int na, ma, nb, mb;
 
 	string line;
@@ -77,8 +80,8 @@ int main(int argc, char* argv[])
 	}
 	
 	if(useStrassen){
-		posix_memalign((void**)&matA, 32, 2*na*na*sizeof(double));
-		matB = matA + na*na;
+		posix_memalign((void**)&matA, ALIGNMENT, na*na*sizeof(double));
+		posix_memalign((void**)&matB, ALIGNMENT, na*na*sizeof(double));
 	} else {
 		matA = new double[na*ma];
 		matB = new double[nb*mb];
@@ -110,9 +113,9 @@ int main(int argc, char* argv[])
 
 	int nc = nb;
 	int mc = ma;
-	double* matC = NULL;
+	double* matC;// = NULL;
 	if(useStrassen){
-		posix_memalign((void**)&matC, 32, nc*mc*sizeof(double));
+		posix_memalign((void**)&matC, ALIGNMENT, nc*mc*sizeof(double));
 	} else {
 		matC = new double[nc*mc];
 	}
@@ -132,7 +135,6 @@ int main(int argc, char* argv[])
 	if(!useStrassen){ 
 	
 		naiveMatmult(matA, matB, matC, nc, mc, na);
-		free(matB);
 
 	} else {
 		//Transpose B
@@ -163,11 +165,12 @@ int main(int argc, char* argv[])
 	}
 	
 	free(matA);
+	free(matB);
 	free(matC);
 
     cout << "Calculation took " << time << " seconds" << endl;
-	cout << "It spent " <<  matMultTime << " seconds of that with naive matrix multiplication!" << endl;
-	cout << "That equals " << (float)(100*matMultTime/time) << " percent of the time!" << endl << endl;
+//	cout << "It spent " <<  matMultTime << " seconds of that with naive matrix multiplication!" << endl;
+//	cout << "That equals " << (float)(100*matMultTime/time) << " percent of the time!" << endl << endl;
 }
 
 inline void naiveMatmult(double* matA, double* matB, double* matC, int nc, int mc, int na){
@@ -181,12 +184,12 @@ inline void naiveMatmult(double* matA, double* matB, double* matC, int nc, int m
 }
 
 inline void naiveMatmultTQ(double* matA, double* matBT, double* matC, int nn){
-	//matA and matB have to be 32 aligned!!!
+	//matA and matB have to be ALIGNMENT aligned!!!
 	
-	siwir::Timer timer;
+//	siwir::Timer timer;
 
-	double* temp = NULL;
-	posix_memalign((void**)&temp, 32, 4*sizeof(double));
+	double* temp;// = NULL;
+	posix_memalign((void**)&temp, ALIGNMENT, 4*sizeof(double));
 
 	for(int i = 0; i < nn; ++i){
 		for(int j = 0; j < nn; ++j){
@@ -206,42 +209,39 @@ inline void naiveMatmultTQ(double* matA, double* matBT, double* matC, int nn){
 
 	free(temp);
 
-	matMultTime += timer.elapsed();
+//	matMultTime += timer.elapsed();
 }
 
 inline void naiveMatmultTQ_fast(double* matA, double* matBT, double* matC){
-	siwir::Timer timer;
+//	siwir::Timer timer;
 
-	double* temp1 = NULL;
-	posix_memalign((void**)&temp1, 32, 4*sizeof(double));
-	double* temp2 = NULL;
-	posix_memalign((void**)&temp2, 32, 4*sizeof(double));
-	double* temp3 = NULL;
-	posix_memalign((void**)&temp3, 32, 4*sizeof(double));
-	double* temp4 = NULL;
-	posix_memalign((void**)&temp4, 32, 4*sizeof(double));
+	double* temp1;
+	posix_memalign((void**)&temp1, ALIGNMENT, 4*4*sizeof(double));
+	double* temp2 = temp1 + 4;
+	double* temp3 = temp1 + 8;
+	double* temp4 = temp1 + 12;
 	
-	for(int i = 0; i < THRESHOLD; ++i){
-		for(int j = 0; j < THRESHOLD; j+=4){
+	for(int i = 0; i < THRESHOLD; i+=4){
+		for(int j = 0; j < THRESHOLD; ++j){
 			__m256d sum1 = _mm256_setzero_pd();
 			__m256d sum2 = _mm256_setzero_pd();
 			__m256d sum3 = _mm256_setzero_pd();
 			__m256d sum4 = _mm256_setzero_pd();
 		
 			for(int k = 0; k < THRESHOLD; k+=4){
-				__m256d A = _mm256_load_pd(&matA [i*THRESHOLD + k]);
-			
-				__m256d B1 = _mm256_load_pd(&matBT[j*THRESHOLD + k]);
-				__m256d C1 = _mm256_mul_pd(A, B1);
+				__m256d B = _mm256_load_pd(&matBT[j*THRESHOLD + k]);	
 				
-				__m256d B2 = _mm256_load_pd(&matBT[(j+1)*THRESHOLD + k]);
-				__m256d C2 = _mm256_mul_pd(A, B2);
+				__m256d A1 = _mm256_load_pd(&matA[i*THRESHOLD + k]);
+				__m256d C1 = _mm256_mul_pd(A1, B);
+				
+				__m256d A2 = _mm256_load_pd(&matA[(i+1)*THRESHOLD + k]);
+				__m256d C2 = _mm256_mul_pd(A2, B);
 
-				__m256d B3 = _mm256_load_pd(&matBT[(j+2)*THRESHOLD + k]);
-				__m256d C3 = _mm256_mul_pd(A, B3);
+				__m256d A3 = _mm256_load_pd(&matA[(i+2)*THRESHOLD + k]);
+				__m256d C3 = _mm256_mul_pd(A3, B);
 				
-				__m256d B4 = _mm256_load_pd(&matBT[(j+3)*THRESHOLD + k]);
-				__m256d C4 = _mm256_mul_pd(A, B4);
+				__m256d A4 = _mm256_load_pd(&matA[(i+3)*THRESHOLD + k]);
+				__m256d C4 = _mm256_mul_pd(A4, B);
 			
 				sum1 = _mm256_add_pd(sum1, C1);
 				sum2 = _mm256_add_pd(sum2, C2);
@@ -253,51 +253,21 @@ inline void naiveMatmultTQ_fast(double* matA, double* matBT, double* matC){
 			matC[i*THRESHOLD + j] = temp1[0] + temp1[1] + temp1[2] + temp1[3];
 			
 			_mm256_store_pd(temp2, sum2);
-			matC[i*THRESHOLD + j + 1] = temp2[0] + temp2[1] + temp2[2] + temp2[3];
+			matC[(i+1)*THRESHOLD + j] = temp2[0] + temp2[1] + temp2[2] + temp2[3];
 			
 			_mm256_store_pd(temp3, sum3);
-			matC[i*THRESHOLD + j + 2] = temp3[0] + temp3[1] + temp3[2] + temp3[3];
+			matC[(i+2)*THRESHOLD + j] = temp3[0] + temp3[1] + temp3[2] + temp3[3];
 			
 			_mm256_store_pd(temp4, sum4);
-			matC[i*THRESHOLD + j + 3] = temp4[0] + temp4[1] + temp4[2] + temp4[3];
+			matC[(i+3)*THRESHOLD + j] = temp4[0] + temp4[1] + temp4[2] + temp4[3];
 		}
 	}
 
 	free(temp1);
-	free(temp2);
-	free(temp3);
-	free(temp4);
-/*
 
-	double* sum = new double[THRESHOLD];
-	
-	for(int i = 0; i < THRESHOLD; ++i){
 
-		memset(sum, 0, THRESHOLD*sizeof(double));
 
-		for(int k = 0; k < THRESHOLD; ++k){
-
-			double a = matA[i*THRESHOLD + k];
-
-			for(int j = 0; j < THRESHOLD; ++j){
-
-				sum[j] += a * matBT[j*THRESHOLD + k];
-
-			}
-		}
-
-		for(int j = 0; j < THRESHOLD; ++j){
-
-			matC[i*THRESHOLD + j] = sum[j];
-
-		}
-
-	}
-
-	free(sum);
-*/
-
-	matMultTime += timer.elapsed();	
+//	matMultTime += timer.elapsed();	
 }
 
 void strassenMult(double* matA, double* matB, double* matC, int nn){
@@ -306,15 +276,15 @@ void strassenMult(double* matA, double* matB, double* matC, int nn){
 		return;
 	} else if(nn < THRESHOLD){
 		cerr << "Duerfte nicht passieren!" << endl;
-		exit(-1);
+		exit(1);
 	}
 	
 	int nnh = nn/2;
 
 	int nnhq = nnh*nnh; // = nn halb quadrat
 
-	double* M = NULL;
-	posix_memalign((void**)&M, 32, nnhq*7*sizeof(double));
+	double* M;// = NULL;
+	posix_memalign((void**)&M, ALIGNMENT, nnhq*7*sizeof(double));
 
 	double* M1 = M + nnhq*0;
 	double* M2 = M + nnhq*1;
@@ -334,8 +304,8 @@ void strassenMult(double* matA, double* matB, double* matC, int nn){
 	// Die entstehende Matrix nennen wir matT (für temp)
 	
 
-	double* matT = NULL;
-	posix_memalign((void**)&matT, 32, 7*2*nnhq*sizeof(double));
+	double* matT;// = NULL;
+	posix_memalign((void**)&matT, ALIGNMENT, 7*2*nnhq*sizeof(double));
 
 	double* matT0 = matT + nnhq*0;
 	double* matT1 = matT + nnhq*2;
@@ -348,24 +318,24 @@ void strassenMult(double* matA, double* matB, double* matC, int nn){
 	
 /*
 	double* matT0 = NULL;
-	posix_memalign((void**)&matT0, 32, 2*nnhq*sizeof(double));
+	posix_memalign((void**)&matT0, ALIGNMENT, 2*nnhq*sizeof(double));
 	double* matT1 = NULL;
-	posix_memalign((void**)&matT1, 32, 2*nnhq*sizeof(double));
+	posix_memalign((void**)&matT1, ALIGNMENT, 2*nnhq*sizeof(double));
 	double* matT2 = NULL;
-	posix_memalign((void**)&matT2, 32, 2*nnhq*sizeof(double));
+	posix_memalign((void**)&matT2, ALIGNMENT, 2*nnhq*sizeof(double));
 	double* matT3 = NULL;
-	posix_memalign((void**)&matT3, 32, 2*nnhq*sizeof(double));
+	posix_memalign((void**)&matT3, ALIGNMENT, 2*nnhq*sizeof(double));
 	double* matT4 = NULL;
-	posix_memalign((void**)&matT4, 32, 2*nnhq*sizeof(double));
+	posix_memalign((void**)&matT4, ALIGNMENT, 2*nnhq*sizeof(double));
 	double* matT5 = NULL;
-	posix_memalign((void**)&matT5, 32, 2*nnhq*sizeof(double));
+	posix_memalign((void**)&matT5, ALIGNMENT, 2*nnhq*sizeof(double));
 	double* matT6 = NULL;
-	posix_memalign((void**)&matT6, 32, 2*nnhq*sizeof(double));
+	posix_memalign((void**)&matT6, ALIGNMENT, 2*nnhq*sizeof(double));
 */
 
 	if(nnh%4 != 0){
 		cerr << "nnh ist nicht durch 4 teilbar!!! Threshold zu klein?" << endl;
-		exit(-1);
+		exit(1);
 	}
 	
 	int pos = -4;
