@@ -1,16 +1,42 @@
+Calculating 32x32
+with Threshold 64
+Calculation took 5.4e-05 seconds
+It spent 0 seconds of that with naive matrix multiplication!
+That equals 0 percent of the time!
+
+Calculating 64x64
+with Threshold 64
+Calculation took 5.6e-05 seconds
+It spent 5.2e-05 seconds of that with naive matrix multiplication!
+That equals 92.8571 percent of the time!
+
+Calculating 128x128
+with Threshold 64
+Calculation took 0.000586 seconds
+It spent 0.000357 seconds of that with naive matrix multiplication!
+That equals 60.9215 percent of the time!
+
+Calculating 256x256
+with Threshold 64
+Calculation took 0.0039 seconds
+It spent 0.002249 seconds of that with naive matrix multiplication!
+That equals 57.6667 percent of the time!
+
+Calculating 512x512
+with Threshold 64
+Calculation took 0.024556 seconds
+It spent 0.015054 seconds of that with naive matrix multiplication!
+That equals 61.3048 percent of the time!
+
+Calculating 1024x1024
+with Threshold 64
+Calculation took 0.17511 seconds
+It spent 0.103612 seconds of that with naive matrix multiplication!
+That equals 59.1697 percent of the time!
+
 Calculating 2048x2048
 with Threshold 64
-Calculation took 1.0045 seconds
-It spent 0.592725 seconds of that with naive matrix multiplication!
-That equals 59.007 percent of the time!
+Calculation took 1.20398 seconds
+It spent 0.727491 seconds of that with naive matrix multiplication!
+That equals 60.424 percent of the time!
 
-padding: yes (12)
-offsetA: no (0)
-offsetB: no (0)
-offsetC: no (0)
-alignment: yes (64)
-unrolling: yes (8)
-blocking: no (0)
-threshold: yes (64)
-strassen() [C style]: 1.08003 seconds
-Generating output: writing file C.out ...

@@ -258,7 +258,7 @@ inline void naiveMatmultTQ_fast(double* matA, double* matBT, double* matC){
 			_mm256_store_pd(temp3, sum3);
 			matC[i*THRESHOLD + j + 2] = temp3[0] + temp3[1] + temp3[2] + temp3[3];
 			
-			_mm256_store_pd(temp3, sum3);
+			_mm256_store_pd(temp4, sum4);
 			matC[i*THRESHOLD + j + 3] = temp4[0] + temp4[1] + temp4[2] + temp4[3];
 		}
 	}
