@@ -25,7 +25,7 @@ extern "C" {
 }
 #endif
 
-#define THRESHOLD 512
+#define THRESHOLD 1024
 #define ALIGNMENT 32 //needed for AVX
 
 inline void naiveMatmult(double* matA, double* matB, double* matC, int nc, int mc, int na);

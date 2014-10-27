@@ -1,21 +1,9 @@
-Calculating 32x32
-with Threshold 512
-Calculation took 8e-05 seconds
-Calculating 64x64
-with Threshold 512
-Calculation took 0.000547 seconds
-Calculating 128x128
-with Threshold 512
-Calculation took 0.004968 seconds
-Calculating 256x256
-with Threshold 512
-Calculation took 0.041194 seconds
-Calculating 512x512
-with Threshold 512
-Calculation took 0.016945 seconds
-Calculating 1024x1024
-with Threshold 512
-Calculation took 0.126695 seconds
-Calculating 2048x2048
-with Threshold 512
-Calculation took 0.881895 seconds
+4/1.20768 seconds
+8/0.402909 seconds
+16/0.252861 seconds
+32/0.184462 seconds
+64/0.147747 seconds
+128/0.138151 seconds
+256/0.137217 seconds
+512/0.124028 seconds
+1024/0.197224 seconds
