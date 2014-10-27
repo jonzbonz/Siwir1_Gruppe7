@@ -31,6 +31,8 @@ inline void naiveMatmult(double* matA, double* matB, double* matC, int nc, int m
 
 inline void naiveMatmultTQ(double* matA, double* matTB, double* matC, int nn);
 
+inline void naiveMatmultTQ_fast(double* matA, double* matTB, double* matC);
+
 void strassenMult(double* matA, double* matB, double* matC, int nn);
 
 double matMultTime = 0; //TODO delete
@@ -108,11 +110,14 @@ int main(int argc, char* argv[])
 
 	int nc = nb;
 	int mc = ma;
-	//double* matC = new double[nc*mc];
 	double* matC = NULL;
-	posix_memalign((void**)&matC, 32, nc*mc*sizeof(double));
+	if(useStrassen){
+		posix_memalign((void**)&matC, 32, nc*mc*sizeof(double));
+	} else {
+		matC = new double[nc*mc];
+	}
 
-	memset(matC, 0, nc*mc*sizeof(double));
+	memset(matC, 0, nc*mc*sizeof(double)); //TODO pruefen ob man das braucht
 
 #ifdef USE_LIKWID
 	likwid_markerInit();
@@ -130,9 +135,6 @@ int main(int argc, char* argv[])
 		free(matB);
 
 	} else {
-		//cout << "using strassen" << endl;	
-		//Strassen-Algorithmus - nur fuer grosse und quadratische matrizen
-
 		//Transpose B
 		for(int i = 0; i < na-1; ++i){
 			for(int j = i+1; j < na; ++j){
@@ -180,7 +182,6 @@ inline void naiveMatmult(double* matA, double* matB, double* matC, int nc, int m
 
 inline void naiveMatmultTQ(double* matA, double* matBT, double* matC, int nn){
 	//matA and matB have to be 32 aligned!!!
-	//double* temp = new double[4];
 	
 	siwir::Timer timer;
 
@@ -199,7 +200,7 @@ inline void naiveMatmultTQ(double* matA, double* matBT, double* matC, int nn){
 			}
 
 			_mm256_store_pd(temp, sum);
-			matC[i*THRESHOLD + j] = temp[0] + temp[1] + temp[2] + temp[3];
+			matC[i*nn + j] = temp[0] + temp[1] + temp[2] + temp[3];
 		}
 	}
 
@@ -208,10 +209,82 @@ inline void naiveMatmultTQ(double* matA, double* matBT, double* matC, int nn){
 	matMultTime += timer.elapsed();
 }
 
+inline void naiveMatmultTQ_fast(double* matA, double* matBT, double* matC){
+	siwir::Timer timer;
+
+	double* temp = NULL;
+	posix_memalign((void**)&temp, 32, 4*sizeof(double));
+
+	__m256d* sum = NULL;
+	posix_memalign((void**)&sum, 32, THRESHOLD*sizeof(__m256));
+	
+	for(int i = 0; i < THRESHOLD; ++i){
+		
+		for(int j = 0; j < THRESHOLD; j++){
+			sum[j] = _mm256_setzero_pd();
+		}
+		
+		for(int k = 0; k < THRESHOLD; k+=4){
+
+			__m256d A = _mm256_load_pd(&matA [i*THRESHOLD + k]);
+
+			for(int j = 0; j < THRESHOLD; ++j){
+				
+				__m256d B = _mm256_load_pd(&matBT[j*THRESHOLD + k]);
+				__m256d C = _mm256_mul_pd(A, B);
+				
+				sum[j] = _mm256_add_pd(sum[j], C);
+			}
+			
+			for(int j = 0; j < THRESHOLD; ++j){
+				_mm256_store_pd(temp, sum[j]);
+				matC[i*THRESHOLD + j] = temp[0] + temp[1] + temp[2] + temp[3];
+			}
+		}
+	}
+		
+	free(sum);
+	free(temp);
+
+/*
+	double* sum = new double[THRESHOLD];
+	
+	for(int i = 0; i < THRESHOLD; ++i){
+
+		memset(sum, 0, THRESHOLD*sizeof(double));
+
+		for(int k = 0; k < THRESHOLD; ++k){
+
+			double a = matA[i*THRESHOLD + k];
+
+			for(int j = 0; j < THRESHOLD; ++j){
+
+				sum[j] += a * matBT[j*THRESHOLD + k];
+
+			}
+		}
+
+		for(int j = 0; j < THRESHOLD; ++j){
+
+			matC[i*THRESHOLD + j] = sum[j];
+
+		}
+
+	}
+
+	free(sum);
+*/
+
+	matMultTime += timer.elapsed();	
+}
+
 void strassenMult(double* matA, double* matB, double* matC, int nn){
-	if(nn <= THRESHOLD){
+	if(nn == THRESHOLD){
 		naiveMatmultTQ(matA, matB, matC, nn);
 		return;
+	} else if(nn < THRESHOLD){
+		cerr << "Duerfte nicht passieren!" << endl;
+		exit(-1);
 	}
 	
 	int nnh = nn/2;
