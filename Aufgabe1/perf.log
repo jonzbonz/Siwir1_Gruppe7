@@ -1,6 +1,38 @@
+Calculating 1024x1024
+with Threshold 64
+Calculation took 0.206397 seconds
+It spent 0.145752 seconds of that with naive matrix multiplication!
+That equals 70.6173 percent of the time!
+
+Calculating 1024x1024
+with Threshold 32
+Calculation took 0.233968 seconds
+It spent 0.132811 seconds of that with naive matrix multiplication!
+That equals 56.7646 percent of the time!
+
+Calculating 1024x1024
+with Threshold 16
+Calculation took 0.299972 seconds
+It spent 0.149667 seconds of that with naive matrix multiplication!
+That equals 49.8937 percent of the time!
+
+Calculating 1024x1024
+with Threshold 16
+Calculating 64x64
+with Threshold 32
+Calculation took 0.000137 seconds
+It spent 7.2e-05 seconds of that with naive matrix multiplication!
+That equals 52.5547 percent of the time!
+
 Calculating 2048x2048
 with Threshold 32
-Calculation took 1.60251 seconds
-It spent 0.954451 seconds of that with naive matrix multiplication!
-That equals 59.5598 percent of the time!
+Calculation took 1.71467 seconds
+It spent 0.955607 seconds of that with naive matrix multiplication!
+That equals 55.7312 percent of the time!
+
+Calculating 2048x2048
+with Threshold 64
+Calculation took 1.40551 seconds
+It spent 0.996699 seconds of that with naive matrix multiplication!
+That equals 70.9137 percent of the time!
 

@@ -25,7 +25,7 @@ extern "C" {
 }
 #endif
 
-#define THRESHOLD 32
+#define THRESHOLD 64
 
 inline void naiveMatmult(double* matA, double* matB, double* matC, int nc, int mc, int na);
 
@@ -62,31 +62,25 @@ int main(int argc, char* argv[])
 	nb = atoi(line.c_str());
 	
 	bool useStrassen = false;
-	int nn = 1;
-	if(na == ma && nb == mb && nb*ma >= 0){ //TODO gute grenze finden
+	if(na == ma && nb == mb && nb >= THRESHOLD){
+		int tmp = na;
 		useStrassen = true;
-		
-		nn=na; //WORKAROUND!
-		/*	
-		while(nn < na) nn = nn << 1;
-		//TODO THIS IS BUGGED! (Ask joni)
-		
-		matA = new double[nn*nn];
-		memset(matA, 0, nn*nn*sizeof(double));
-		matB = new double[nn*nn];
-		memset(matB, 0, nn*nn*sizeof(double));
-		*/
+		while(tmp > 1){ // Pruefen auf zweierpotenz
+			if(tmp%2 == 1){
+				useStrassen = false;
+				break;
+			}
+			tmp = tmp >> 1;
+		}	
+	}
+	
+	if(useStrassen){
+		posix_memalign((void**)&matA, 32, 2*na*na*sizeof(double));
+		matB = matA + na*na;
 	} else {
 		matA = new double[na*ma];
 		matB = new double[nb*mb];
 	}
-	
-	//matA = new double[na*ma];
-	matA = NULL;
-	posix_memalign((void**)&matA, 32, na*ma*sizeof(double));
-	//matB = new double[nb*mb];
-	matB = NULL;
-	posix_memalign((void**)&matB, 32, nb*mb*sizeof(double));
 
 	for(int i = 0; i < ma; ++i){
 		for(int j = 0; j < na; ++j){
@@ -133,21 +127,22 @@ int main(int argc, char* argv[])
 	if(!useStrassen){ 
 	
 		naiveMatmult(matA, matB, matC, nc, mc, na);
+		free(matB);
 
 	} else {
 		//cout << "using strassen" << endl;	
 		//Strassen-Algorithmus - nur fuer grosse und quadratische matrizen
 
 		//Transpose B
-		for(int i = 0; i < nn-1; ++i){
-			for(int j = i+1; j < nn; ++j){
-				double tmp = matB[i*nn + j];
-				matB[i*nn + j] = matB[j*nn + i];
-				matB[j*nn + i] = tmp;
+		for(int i = 0; i < na-1; ++i){
+			for(int j = i+1; j < na; ++j){
+				double tmp = matB[i*na + j];
+				matB[i*na + j] = matB[j*na + i];
+				matB[j*na + i] = tmp;
 			}
 		}
 
-		strassenMult(matA, matB, matC, nn);
+		strassenMult(matA, matB, matC, na);
 	}
 
    	double time = timer.elapsed();
@@ -164,7 +159,8 @@ int main(int argc, char* argv[])
 	for(int i = 0; i < nc*mc; ++i){ 
 		outfile << matC[i] << endl;
 	}
-
+	
+	free(matA);
 	free(matC);
 
     cout << "Calculation took " << time << " seconds" << endl;
@@ -201,6 +197,7 @@ inline void naiveMatmultTQ(double* matA, double* matBT, double* matC, int nn){
 				
 				sum = _mm256_add_pd(sum, C);
 			}
+
 			_mm256_store_pd(temp, sum);
 			matC[i*THRESHOLD + j] = temp[0] + temp[1] + temp[2] + temp[3];
 		}
@@ -221,9 +218,6 @@ void strassenMult(double* matA, double* matB, double* matC, int nn){
 
 	int nnhq = nnh*nnh; // = nn halb quadrat
 
-
-	
-	//double* M = new double[nnhq*7];
 	double* M = NULL;
 	posix_memalign((void**)&M, 32, nnhq*7*sizeof(double));
 
@@ -245,10 +239,9 @@ void strassenMult(double* matA, double* matB, double* matC, int nn){
 	// Die entstehende Matrix nennen wir matT (für temp)
 	
 
-	//double* matT = new double[7*2*nnhq]; //nn = größe z.b. von matA, nnh = hälfte davon, nnhq = quadrat von nnh --> Größe von A11 z.b.
 	double* matT = NULL;
 	posix_memalign((void**)&matT, 32, 7*2*nnhq*sizeof(double));
-	
+
 	double* matT0 = matT + nnhq*0;
 	double* matT1 = matT + nnhq*2;
 	double* matT2 = matT + nnhq*4;
@@ -258,9 +251,22 @@ void strassenMult(double* matA, double* matB, double* matC, int nn){
 	double* matT6 = matT + nnhq*12;
 
 	
-	//cout << "Matrix ist " << (7*2*nnhq*sizeof(double)/(1024*1024.0f)) << "MByte groß!" << endl;
-	//memset(matT, 0, 7*2*nnhq*sizeof(double));
-
+/*
+	double* matT0 = NULL;
+	posix_memalign((void**)&matT0, 32, 2*nnhq*sizeof(double));
+	double* matT1 = NULL;
+	posix_memalign((void**)&matT1, 32, 2*nnhq*sizeof(double));
+	double* matT2 = NULL;
+	posix_memalign((void**)&matT2, 32, 2*nnhq*sizeof(double));
+	double* matT3 = NULL;
+	posix_memalign((void**)&matT3, 32, 2*nnhq*sizeof(double));
+	double* matT4 = NULL;
+	posix_memalign((void**)&matT4, 32, 2*nnhq*sizeof(double));
+	double* matT5 = NULL;
+	posix_memalign((void**)&matT5, 32, 2*nnhq*sizeof(double));
+	double* matT6 = NULL;
+	posix_memalign((void**)&matT6, 32, 2*nnhq*sizeof(double));
+*/
 
 	if(nnh%4 != 0){
 		cerr << "nnh ist nicht durch 4 teilbar!!! Threshold zu klein?" << endl;
@@ -287,8 +293,6 @@ void strassenMult(double* matA, double* matB, double* matC, int nn){
 		}	
 	}
 	
-	//free(matA);
-
 
 	pos = -4 + nnhq;
 	for(int i = 0; i < nnh; ++i){
@@ -309,9 +313,6 @@ void strassenMult(double* matA, double* matB, double* matC, int nn){
 		}
 	}
 
-	//free(matB);
-
-	
 	strassenMult(matT0, matT0 + nnhq, M + 0*nnhq, nnh);
 	strassenMult(matT1, matT1 + nnhq, M + 1*nnhq, nnh);
 	strassenMult(matT2, matT2 + nnhq, M + 2*nnhq, nnh);
