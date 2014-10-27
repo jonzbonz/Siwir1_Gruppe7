@@ -25,20 +25,15 @@ extern "C" {
 }
 #endif
 
-#define THRESHOLD 128
+#define THRESHOLD 32
 
 inline void naiveMatmult(double* matA, double* matB, double* matC, int nc, int mc, int na);
-
-inline void naiveMatmultQ(double* matA, double* matB, double* matC, int nn);
 
 inline void naiveMatmultTQ(double* matA, double* matTB, double* matC, int nn);
 
 void strassenMult(double* matA, double* matB, double* matC, int nn);
 
-//void align(void** pointer){
-//	
-//}
-double matMultTime = 0;
+double matMultTime = 0; //TODO delete
 
 int main(int argc, char* argv[])
 {
@@ -170,11 +165,7 @@ int main(int argc, char* argv[])
 		outfile << matC[i] << endl;
 	}
 
-	matC = NULL;
-	posix_memalign((void**)&matC, 32, nc*mc*sizeof(double));
-	outfile.close();
-   
-	delete[] matC;
+	free(matC);
 
     cout << "Calculation took " << time << " seconds" << endl;
 	cout << "It spent " <<  matMultTime << " seconds of that with naive matrix multiplication!" << endl;
@@ -191,61 +182,6 @@ inline void naiveMatmult(double* matA, double* matB, double* matC, int nc, int m
 	}
 }
 
-inline void naiveMatmultQ(double* matA, double* matB, double* matC, int nn){
-	
-	//transpose matB
-	double* matBT = new double[nn*nn];
-	for(int i = 0; i < nn; ++i){
-		for(int j = 0; j < nn; ++j){
-			matBT[i*nn + j] = matB[j*nn +i];
-		}
-	}
-
-/*
-	for(int j = 0; j < nn; ++j){							// ueber die Spalten von matC
-		for(int i = 0; i  < nn; ++i){						// ueber die Zeilen von matC
-			for(int k = 0;  k  < nn; ++k){					// ueber die Spalten von matA / Zeilen von matB
-				matC[i*nn + j] += matA[i*nn + k] * matBT[j*nn + k];
-			}
-		} 
-	}
-*/
-
-	double* temp = new double[4];
-	for(int j = 0; j < nn; ++j){
-		for(int i = 0; i < nn; ++i){							// ueber die Zeilen und spalten von matC
-			__m256d sum = _mm256_setzero_pd();
-			for(int k = 0; k < nn; k+=4){						// ueber die Spalten von matA / Zeilen von matB
-				__m256d A = _mm256_loadu_pd(&matA [i*nn + k]);
-				__m256d B = _mm256_loadu_pd(&matBT[j*nn + k]);
-				__m256d C = _mm256_mul_pd(A, B);
-				
-				sum = _mm256_add_pd(sum, C);
-			}
-			_mm256_storeu_pd(temp, sum);
-			matC[i*nn + j] = temp[0] + temp[1] + temp[2] + temp[3];
-		}
-	}
-	
-	/*double* temp = new double[4];
-	for(int j = 0; j < nn; ++j){
-		for(int i = 0; i < nn; ++i){							// ueber die Zeilen und spalten von matC
-			__m256d sum = _mm256_setzero_pd();
-			for(int k = 0; k < nn; k+=4){						// ueber die Spalten von matA / Zeilen von matB
-				__m256d A = _mm256_loadu_pd(&matA [i*nn + k]);
-				__m256d B = _mm256_loadu_pd(&matBT[j*nn + k]);
-				__m256d C = _mm256_mul_pd(A, B);
-				
-				sum = _mm256_add_pd(sum, C);
-			}
-			_mm256_storeu_pd(temp, sum);
-			matC[i*nn + j] = temp[0] + temp[1] + temp[2] + temp[3];
-		}
-	}*/
-}
-
-
-
 inline void naiveMatmultTQ(double* matA, double* matBT, double* matC, int nn){
 	//matA and matB have to be 32 aligned!!!
 	//double* temp = new double[4];
@@ -255,10 +191,10 @@ inline void naiveMatmultTQ(double* matA, double* matBT, double* matC, int nn){
 	double* temp = NULL;
 	posix_memalign((void**)&temp, 32, 4*sizeof(double));
 
-	for(int j = 0; j < nn; ++j){
-		for(int i = 0; i < nn; ++i){							// ueber die Zeilen und spalten von matC
+	for(int i = 0; i < nn; ++i){
+		for(int j = 0; j < nn; ++j){
 			__m256d sum = _mm256_setzero_pd();
-			for(int k = 0; k < nn; k+=4){						// ueber die Spalten von matA / Zeilen von matB
+			for(int k = 0; k < nn; k+=4){
 				__m256d A = _mm256_load_pd(&matA [i*nn + k]);
 				__m256d B = _mm256_load_pd(&matBT[j*nn + k]);
 				__m256d C = _mm256_mul_pd(A, B);
@@ -266,9 +202,11 @@ inline void naiveMatmultTQ(double* matA, double* matBT, double* matC, int nn){
 				sum = _mm256_add_pd(sum, C);
 			}
 			_mm256_store_pd(temp, sum);
-			matC[i*nn + j] = temp[0] + temp[1] + temp[2] + temp[3];
+			matC[i*THRESHOLD + j] = temp[0] + temp[1] + temp[2] + temp[3];
 		}
 	}
+
+	free(temp);
 
 	matMultTime += timer.elapsed();
 }
@@ -349,6 +287,9 @@ void strassenMult(double* matA, double* matB, double* matC, int nn){
 		}	
 	}
 	
+	//free(matA);
+
+
 	pos = -4 + nnhq;
 	for(int i = 0; i < nnh; ++i){
 		for(int j = 0; j < nnh; j+=4){
@@ -368,10 +309,8 @@ void strassenMult(double* matA, double* matB, double* matC, int nn){
 		}
 	}
 
+	//free(matB);
 
-	//Not needed any more
-	//delete[] matA;
-	//delete[] matB;
 	
 	strassenMult(matT0, matT0 + nnhq, M + 0*nnhq, nnh);
 	strassenMult(matT1, matT1 + nnhq, M + 1*nnhq, nnh);
@@ -381,16 +320,8 @@ void strassenMult(double* matA, double* matB, double* matC, int nn){
 	strassenMult(matT5, matT5 + nnhq, M + 5*nnhq, nnh);
 	strassenMult(matT6, matT6 + nnhq, M + 6*nnhq, nnh);
 	
+	free(matT);
 
-	double* tmp1 = NULL;
-	posix_memalign((void**)&tmp1, 32, 4*sizeof(double));
-	double* tmp2 = NULL;
-	posix_memalign((void**)&tmp2, 32, 4*sizeof(double));
-	double* tmp3 = NULL;
-	posix_memalign((void**)&tmp3, 32, 4*sizeof(double));
-	double* tmp4 = NULL;
-	posix_memalign((void**)&tmp4, 32, 4*sizeof(double));
-	
 	pos = -4;
 	for(int i = 0; i < nnh;  ++i){
 		for(int j = 0; j < nnh; j+=4){
@@ -414,4 +345,6 @@ void strassenMult(double* matA, double* matB, double* matC, int nn){
 
 		}
 	}
+	
+	free(M);
 }
