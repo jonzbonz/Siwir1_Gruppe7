@@ -25,7 +25,7 @@ extern "C" {
 }
 #endif
 
-#define THRESHOLD 1024
+#define THRESHOLD 2048
 #define ALIGNMENT 32 //needed for AVX
 
 inline void naiveMatmult(double* matA, double* matB, double* matC, int nc, int mc, int na);
@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 		exit(1);
 	}
 
-	cout << "with Threshold " << THRESHOLD << endl;
+//	cout << "with Threshold " << THRESHOLD << endl;
 
 	//Reading input / creating matrices
 	double* matA;// = NULL;
@@ -168,7 +168,7 @@ int main(int argc, char* argv[])
 	free(matB);
 	free(matC);
 
-    cout << "Calculation took " << time << " seconds" << endl;
+    cout << THRESHOLD << "  " << time << endl;
 //	cout << "It spent " <<  matMultTime << " seconds of that with naive matrix multiplication!" << endl;
 //	cout << "That equals " << (float)(100*matMultTime/time) << " percent of the time!" << endl << endl;
 }
