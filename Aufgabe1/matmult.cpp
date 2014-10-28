@@ -215,11 +215,11 @@ inline void naiveMatmultTQ(double* matA, double* matBT, double* matC, int nn){
 inline void naiveMatmultTQ_fast(double* matA, double* matBT, double* matC){
 //	siwir::Timer timer;
 
-	double* temp1;
-	posix_memalign((void**)&temp1, ALIGNMENT, 4*4*sizeof(double));
-	double* temp2 = temp1 + 4;
-	double* temp3 = temp1 + 8;
-	double* temp4 = temp1 + 12;
+	double* temp;
+	posix_memalign((void**)&temp, ALIGNMENT, 4*sizeof(double));
+	//double* temp2 = temp1 + 4;
+	//double* temp3 = temp1 + 4;
+	//double* temp4 = temp1 + 12;
 	
 	for(int i = 0; i < THRESHOLD; i+=4){
 		for(int j = 0; j < THRESHOLD; ++j){
@@ -248,22 +248,31 @@ inline void naiveMatmultTQ_fast(double* matA, double* matBT, double* matC){
 				sum3 = _mm256_add_pd(sum3, C3);
 				sum4 = _mm256_add_pd(sum4, C4);
 			}		
-		
-			_mm256_store_pd(temp1, sum1);
-			matC[i*THRESHOLD + j] = temp1[0] + temp1[1] + temp1[2] + temp1[3];
 			
-			_mm256_store_pd(temp2, sum2);
-			matC[(i+1)*THRESHOLD + j] = temp2[0] + temp2[1] + temp2[2] + temp2[3];
+			sum1 = _mm256_hadd_pd(sum1, sum2); // --> a0+a1, b0+b1, a2+a3, b2+b3	
+			sum1 = _mm256_permute_pd(sum1, 0b0110);
+			sum3 = _mm256_hadd_pd(sum3, sum4);
+			sum3 = _mm256_permute_pd(sum3, 0b0110);
 			
-			_mm256_store_pd(temp3, sum3);
-			matC[(i+2)*THRESHOLD + j] = temp3[0] + temp3[1] + temp3[2] + temp3[3];
+			sum1 = _mm256_hadd_pd(sum1, sum3);
+
+			_mm256_store_pd(temp, sum1); 
 			
-			_mm256_store_pd(temp4, sum4);
-			matC[(i+3)*THRESHOLD + j] = temp4[0] + temp4[1] + temp4[2] + temp4[3];
+			matC[i*THRESHOLD + j] = temp[0];// + temp1[2] + temp1[3];
+			
+			//_mm256_store_pd(temp2, sum2);
+			matC[(i+1)*THRESHOLD + j] = temp[1];// + temp2[2] + temp2[3];
+			
+
+			//_mm256_store_pd(temp3, sum3);
+			matC[(i+2)*THRESHOLD + j] = temp[2];// + temp3[2] + temp3[3];
+			
+			//_mm256_store_pd(temp4, sum4);
+			matC[(i+3)*THRESHOLD + j] = temp[3];// + temp4[2] + temp4[3];
 		}
 	}
 
-	free(temp1);
+	free(temp);
 
 
 
