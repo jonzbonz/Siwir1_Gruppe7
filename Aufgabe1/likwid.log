@@ -2,8 +2,7 @@ Profiling program matmult on core 0
 ================================================================================
 
 Measuring performance for event group FLOPS_DP using the marker api...
-with Threshold 512
-Calculation took 0.883572 seconds
+512  0.882218
 -------------------------------------------------------------
 -------------------------------------------------------------
 CPU type:	Intel Core SandyBridge processor 
@@ -18,36 +17,35 @@ Region: matmult
 +-------------------+----------+
 |    Region Info    |  core 0  |
 +-------------------+----------+
-| RDTSC Runtime [s] | 0.883593 |
+| RDTSC Runtime [s] | 0.882231 |
 |    call count     |    1     |
 +-------------------+----------+
 +--------------------------------------+-------------+
 |                Event                 |   core 0    |
 +--------------------------------------+-------------+
 |          INSTR_RETIRED_ANY           | 5.12843e+09 |
-|        CPU_CLK_UNHALTED_CORE         | 3.2382e+09  |
-|         CPU_CLK_UNHALTED_REF         | 2.91147e+09 |
+|        CPU_CLK_UNHALTED_CORE         | 3.24408e+09 |
+|         CPU_CLK_UNHALTED_REF         | 2.90934e+09 |
 | FP_COMP_OPS_EXE_SSE_FP_PACKED_DOUBLE |      0      |
-| FP_COMP_OPS_EXE_SSE_FP_SCALAR_DOUBLE | 4.21248e+07 |
-|      SIMD_FP_256_PACKED_DOUBLE       | 3.42673e+09 |
+| FP_COMP_OPS_EXE_SSE_FP_SCALAR_DOUBLE | 4.24699e+07 |
+|      SIMD_FP_256_PACKED_DOUBLE       | 3.42717e+09 |
 +--------------------------------------+-------------+
 +----------------------+----------+
 |        Metric        |  core 0  |
 +----------------------+----------+
-| Runtime (RDTSC) [s]  | 0.883593 |
-| Runtime unhalted [s] | 0.954578 |
-|     Clock [MHz]      | 3772.97  |
-|         CPI          | 0.631421 |
-|       MFlops/s       | 47.6744  |
-|   32b AVX MFlops/s   | 15512.7  |
-|    Packed MUOPS/s    | 3878.18  |
-|    Scalar MUOPS/s    | 47.6744  |
+| Runtime (RDTSC) [s]  | 0.882231 |
+| Runtime unhalted [s] | 0.956311 |
+|     Clock [MHz]      | 3782.59  |
+|         CPI          | 0.632568 |
+|       MFlops/s       | 48.1393  |
+|   32b AVX MFlops/s   | 15538.6  |
+|    Packed MUOPS/s    | 3884.66  |
+|    Scalar MUOPS/s    | 48.1393  |
 +----------------------+----------+
 ================================================================================
 
 Measuring performance for event group L2 using the marker api...
-with Threshold 512
-Calculation took 0.884553 seconds
+512  0.878552
 -------------------------------------------------------------
 -------------------------------------------------------------
 CPU type:	Intel Core SandyBridge processor 
@@ -62,35 +60,34 @@ Region: matmult
 +-------------------+----------+
 |    Region Info    |  core 0  |
 +-------------------+----------+
-| RDTSC Runtime [s] | 0.884583 |
+| RDTSC Runtime [s] | 0.878568 |
 |    call count     |    1     |
 +-------------------+----------+
 +-----------------------+-------------+
 |         Event         |   core 0    |
 +-----------------------+-------------+
 |   INSTR_RETIRED_ANY   | 5.12843e+09 |
-| CPU_CLK_UNHALTED_CORE | 3.24137e+09 |
-| CPU_CLK_UNHALTED_REF  | 2.90886e+09 |
-|    L1D_REPLACEMENT    | 2.37217e+08 |
-|      L1D_M_EVICT      | 1.65172e+07 |
+| CPU_CLK_UNHALTED_CORE | 3.23744e+09 |
+| CPU_CLK_UNHALTED_REF  | 2.9032e+09  |
+|    L1D_REPLACEMENT    | 2.37097e+08 |
+|      L1D_M_EVICT      | 1.65232e+07 |
 +-----------------------+-------------+
 +-------------------------+----------+
 |         Metric          |  core 0  |
 +-------------------------+----------+
-|   Runtime (RDTSC) [s]   | 0.884583 |
-|  Runtime unhalted [s]   | 0.955513 |
-|       Clock [MHz]       | 3780.04  |
-|           CPI           | 0.632039 |
-|   L2 Load [MBytes/s]    | 17162.8  |
-|   L2 Evict [MBytes/s]   | 1195.03  |
-| L2 bandwidth [MBytes/s] | 18357.8  |
-| L2 data volume [GBytes] |  16.239  |
+|   Runtime (RDTSC) [s]   | 0.878568 |
+|  Runtime unhalted [s]   | 0.954351 |
+|       Clock [MHz]       | 3782.84  |
+|           CPI           | 0.631274 |
+|   L2 Load [MBytes/s]    | 17271.5  |
+|   L2 Evict [MBytes/s]   | 1203.64  |
+| L2 bandwidth [MBytes/s] | 18475.2  |
+| L2 data volume [GBytes] | 16.2317  |
 +-------------------------+----------+
 ================================================================================
 
 Measuring performance for event group L2CACHE using the marker api...
-with Threshold 512
-Calculation took 0.887302 seconds
+512  0.886705
 -------------------------------------------------------------
 -------------------------------------------------------------
 CPU type:	Intel Core SandyBridge processor 
@@ -105,28 +102,28 @@ Region: matmult
 +-------------------+----------+
 |    Region Info    |  core 0  |
 +-------------------+----------+
-| RDTSC Runtime [s] | 0.887343 |
+| RDTSC Runtime [s] | 0.886719 |
 |    call count     |    1     |
 +-------------------+----------+
 +-----------------------+-------------+
 |         Event         |   core 0    |
 +-----------------------+-------------+
 |   INSTR_RETIRED_ANY   | 5.12843e+09 |
-| CPU_CLK_UNHALTED_CORE | 3.24708e+09 |
-| CPU_CLK_UNHALTED_REF  | 2.91029e+09 |
-| L2_TRANS_ALL_REQUESTS | 7.63927e+08 |
-|     L2_RQSTS_MISS     | 2.51869e+08 |
+| CPU_CLK_UNHALTED_CORE | 3.24158e+09 |
+| CPU_CLK_UNHALTED_REF  | 2.9095e+09  |
+| L2_TRANS_ALL_REQUESTS | 7.63248e+08 |
+|     L2_RQSTS_MISS     | 2.51847e+08 |
 +-----------------------+-------------+
 +----------------------+-----------+
 |        Metric        |  core 0   |
 +----------------------+-----------+
-| Runtime (RDTSC) [s]  | 0.887343  |
-| Runtime unhalted [s] | 0.957227  |
-|     Clock [MHz]      |  3784.72  |
-|         CPI          | 0.633153  |
-|   L2 request rate    | 0.148959  |
-|     L2 miss rate     | 0.0491123 |
-|    L2 miss ratio     | 0.329703  |
+| Runtime (RDTSC) [s]  | 0.886719  |
+| Runtime unhalted [s] | 0.955582  |
+|     Clock [MHz]      |  3779.42  |
+|         CPI          |  0.63208  |
+|   L2 request rate    | 0.148827  |
+|     L2 miss rate     | 0.0491081 |
+|    L2 miss ratio     | 0.329968  |
 +----------------------+-----------+
 ================================================================================
 
