@@ -2,7 +2,7 @@ Profiling program matmult on core 0
 ================================================================================
 
 Measuring performance for event group FLOPS_DP using the marker api...
-512  0.88818
+128  0.850799
 -------------------------------------------------------------
 -------------------------------------------------------------
 CPU type:	Intel Core SandyBridge processor 
@@ -17,35 +17,35 @@ Region: matmult
 +-------------------+----------+
 |    Region Info    |  core 0  |
 +-------------------+----------+
-| RDTSC Runtime [s] | 0.888193 |
+| RDTSC Runtime [s] | 0.850813 |
 |    call count     |    1     |
 +-------------------+----------+
 +--------------------------------------+-------------+
 |                Event                 |   core 0    |
 +--------------------------------------+-------------+
-|          INSTR_RETIRED_ANY           | 5.12843e+09 |
-|        CPU_CLK_UNHALTED_CORE         | 3.24588e+09 |
-|         CPU_CLK_UNHALTED_REF         | 2.91738e+09 |
+|          INSTR_RETIRED_ANY           | 3.85423e+09 |
+|        CPU_CLK_UNHALTED_CORE         | 3.07477e+09 |
+|         CPU_CLK_UNHALTED_REF         | 2.76361e+09 |
 | FP_COMP_OPS_EXE_SSE_FP_PACKED_DOUBLE |      0      |
-| FP_COMP_OPS_EXE_SSE_FP_SCALAR_DOUBLE | 4.24602e+07 |
-|      SIMD_FP_256_PACKED_DOUBLE       | 3.42727e+09 |
+| FP_COMP_OPS_EXE_SSE_FP_SCALAR_DOUBLE | 1.18251e+08 |
+|      SIMD_FP_256_PACKED_DOUBLE       | 2.62526e+09 |
 +--------------------------------------+-------------+
 +----------------------+----------+
 |        Metric        |  core 0  |
 +----------------------+----------+
-| Runtime (RDTSC) [s]  | 0.888193 |
-| Runtime unhalted [s] | 0.956835 |
-|     Clock [MHz]      | 3774.28  |
-|         CPI          | 0.632919 |
-|       MFlops/s       | 47.8051  |
-|   32b AVX MFlops/s   | 15434.8  |
-|    Packed MUOPS/s    |  3858.7  |
-|    Scalar MUOPS/s    | 47.8051  |
+| Runtime (RDTSC) [s]  | 0.850813 |
+| Runtime unhalted [s] | 0.906381 |
+|     Clock [MHz]      | 3774.31  |
+|         CPI          | 0.797765 |
+|       MFlops/s       | 138.986  |
+|   32b AVX MFlops/s   | 12342.3  |
+|    Packed MUOPS/s    | 3085.58  |
+|    Scalar MUOPS/s    | 138.986  |
 +----------------------+----------+
 ================================================================================
 
 Measuring performance for event group L2 using the marker api...
-512  0.886787
+128  0.842598
 -------------------------------------------------------------
 -------------------------------------------------------------
 CPU type:	Intel Core SandyBridge processor 
@@ -60,34 +60,34 @@ Region: matmult
 +-------------------+----------+
 |    Region Info    |  core 0  |
 +-------------------+----------+
-| RDTSC Runtime [s] | 0.886808 |
+| RDTSC Runtime [s] | 0.842611 |
 |    call count     |    1     |
 +-------------------+----------+
 +-----------------------+-------------+
 |         Event         |   core 0    |
 +-----------------------+-------------+
-|   INSTR_RETIRED_ANY   | 5.12843e+09 |
-| CPU_CLK_UNHALTED_CORE | 3.24016e+09 |
-| CPU_CLK_UNHALTED_REF  | 2.91199e+09 |
-|    L1D_REPLACEMENT    | 2.3714e+08  |
-|      L1D_M_EVICT      | 1.65221e+07 |
+|   INSTR_RETIRED_ANY   | 3.85423e+09 |
+| CPU_CLK_UNHALTED_CORE | 3.06627e+09 |
+| CPU_CLK_UNHALTED_REF  | 2.75973e+09 |
+|    L1D_REPLACEMENT    | 1.44735e+08 |
+|      L1D_M_EVICT      | 3.8544e+07  |
 +-----------------------+-------------+
 +-------------------------+----------+
 |         Metric          |  core 0  |
 +-------------------------+----------+
-|   Runtime (RDTSC) [s]   | 0.886808 |
-|  Runtime unhalted [s]   | 0.955146 |
-|       Clock [MHz]       | 3774.62  |
-|           CPI           | 0.631803 |
-|   L2 Load [MBytes/s]    | 17114.1  |
-|   L2 Evict [MBytes/s]   | 1192.38  |
-| L2 bandwidth [MBytes/s] | 18306.5  |
-| L2 data volume [GBytes] | 16.2344  |
+|   Runtime (RDTSC) [s]   | 0.842611 |
+|  Runtime unhalted [s]   | 0.903878 |
+|       Clock [MHz]       | 3769.16  |
+|           CPI           | 0.795561 |
+|   L2 Load [MBytes/s]    | 10993.2  |
+|   L2 Evict [MBytes/s]   | 2927.59  |
+| L2 bandwidth [MBytes/s] | 13920.8  |
+| L2 data volume [GBytes] | 11.7298  |
 +-------------------------+----------+
 ================================================================================
 
 Measuring performance for event group L2CACHE using the marker api...
-512  0.879887
+128  0.84801
 -------------------------------------------------------------
 -------------------------------------------------------------
 CPU type:	Intel Core SandyBridge processor 
@@ -99,31 +99,31 @@ Measuring group L2CACHE
 =====================
 Region: matmult 
 =====================
-+-------------------+---------+
-|    Region Info    | core 0  |
-+-------------------+---------+
-| RDTSC Runtime [s] | 0.87989 |
-|    call count     |    1    |
-+-------------------+---------+
++-------------------+----------+
+|    Region Info    |  core 0  |
++-------------------+----------+
+| RDTSC Runtime [s] | 0.848022 |
+|    call count     |    1     |
++-------------------+----------+
 +-----------------------+-------------+
 |         Event         |   core 0    |
 +-----------------------+-------------+
-|   INSTR_RETIRED_ANY   | 5.12843e+09 |
-| CPU_CLK_UNHALTED_CORE | 3.24392e+09 |
-| CPU_CLK_UNHALTED_REF  | 2.90426e+09 |
-| L2_TRANS_ALL_REQUESTS | 7.62962e+08 |
-|     L2_RQSTS_MISS     | 2.51926e+08 |
+|   INSTR_RETIRED_ANY   | 3.85423e+09 |
+| CPU_CLK_UNHALTED_CORE | 3.07292e+09 |
+| CPU_CLK_UNHALTED_REF  | 2.76715e+09 |
+| L2_TRANS_ALL_REQUESTS | 4.16999e+08 |
+|     L2_RQSTS_MISS     | 1.00427e+08 |
 +-----------------------+-------------+
 +----------------------+-----------+
 |        Metric        |  core 0   |
 +----------------------+-----------+
-| Runtime (RDTSC) [s]  |  0.87989  |
-| Runtime unhalted [s] | 0.956255  |
-|     Clock [MHz]      |  3789.05  |
-|         CPI          | 0.632536  |
-|   L2 request rate    | 0.148771  |
-|     L2 miss rate     | 0.0491234 |
-|    L2 miss ratio     | 0.330194  |
+| Runtime (RDTSC) [s]  | 0.848022  |
+| Runtime unhalted [s] | 0.905837  |
+|     Clock [MHz]      |  3767.21  |
+|         CPI          | 0.797286  |
+|   L2 request rate    | 0.108193  |
+|     L2 miss rate     | 0.0260562 |
+|    L2 miss ratio     | 0.240832  |
 +----------------------+-----------+
 ================================================================================
 
