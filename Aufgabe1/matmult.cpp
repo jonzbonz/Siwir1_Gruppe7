@@ -25,7 +25,7 @@ extern "C" {
 }
 #endif
 
-#define THRESHOLD 128
+#define THRESHOLD 512
 #define ALIGNMENT 32 //needed for AVX
 
 inline void naiveMatmult(double* matA, double* matB, double* matC, int nc, int mc, int na);
@@ -226,10 +226,9 @@ inline void naiveMatmultTQ_fast(double* matA, double* matBT, double* matC){
 	double* temp8 = temp1 + 28;
 
 	
-	for(int i = 0; i < THRESHOLD; i+=8){
-		for(int j = 0; j < THRESHOLD; ++j){
-			
-			//_mm256_zeroall(); scheint nicht zu gehen! wahrscheinlich, wenn register ausgelagert werden und diese dann nicht genullt werden
+	for(int j = 0; j < THRESHOLD; j+=4){
+		for(int i = 0; i < THRESHOLD; i+=2){
+/*		
 			__m256d sum1 = _mm256_setzero_pd();
 			__m256d sum2 = _mm256_setzero_pd();
 			__m256d sum3 = _mm256_setzero_pd();
@@ -238,33 +237,42 @@ inline void naiveMatmultTQ_fast(double* matA, double* matBT, double* matC){
 			__m256d sum6 = _mm256_setzero_pd();
 			__m256d sum7 = _mm256_setzero_pd();
 			__m256d sum8 = _mm256_setzero_pd();
+*/			
 			
-			for(int k = 0; k < THRESHOLD; k+=4){
-				__m256d B = _mm256_load_pd(&matBT[j*THRESHOLD + k]);	
-				
-				__m256d A1 = _mm256_load_pd(&matA[i*THRESHOLD + k]);
-				__m256d C1 = _mm256_mul_pd(A1, B);
-				
-				__m256d A2 = _mm256_load_pd(&matA[(i+1)*THRESHOLD + k]);
-				__m256d C2 = _mm256_mul_pd(A2, B);
+			__m256d B1 = _mm256_load_pd(&matBT[j*THRESHOLD]);	
+			__m256d B2 = _mm256_load_pd(&matBT[(j+1)*THRESHOLD]);
+			__m256d B3 = _mm256_load_pd(&matBT[(j+2)*THRESHOLD]);
+			__m256d B4 = _mm256_load_pd(&matBT[(j+3)*THRESHOLD]);
 
-				__m256d A3 = _mm256_load_pd(&matA[(i+2)*THRESHOLD + k]);
-				__m256d C3 = _mm256_mul_pd(A3, B);
+			__m256d A1 = _mm256_load_pd(&matA[i*THRESHOLD]);
+			__m256d A2 = _mm256_load_pd(&matA[(i+1)*THRESHOLD]);
+			
+			__m256d sum1 = _mm256_mul_pd(A1, B1);
+			__m256d sum2 = _mm256_mul_pd(A2, B1);
+			__m256d sum3 = _mm256_mul_pd(A1, B2);
+			__m256d sum4 = _mm256_mul_pd(A2, B2);
+			__m256d sum5 = _mm256_mul_pd(A1, B3);
+			__m256d sum6 = _mm256_mul_pd(A2, B3);
+			__m256d sum7 = _mm256_mul_pd(A1, B4);
+			__m256d sum8 = _mm256_mul_pd(A2, B4);
+
+			for(int k = 4; k < THRESHOLD; k+=4){
+				B1 = _mm256_load_pd(&matBT[j*THRESHOLD + k]);	
+				B2 = _mm256_load_pd(&matBT[(j+1)*THRESHOLD + k]);
+				B3 = _mm256_load_pd(&matBT[(j+2)*THRESHOLD + k]);
+				B4 = _mm256_load_pd(&matBT[(j+3)*THRESHOLD + k]);
+
+				A1 = _mm256_load_pd(&matA[i*THRESHOLD + k]);
+				A2 = _mm256_load_pd(&matA[(i+1)*THRESHOLD + k]);
 				
-				__m256d A4 = _mm256_load_pd(&matA[(i+3)*THRESHOLD + k]);
-				__m256d C4 = _mm256_mul_pd(A4, B);
-				
-				__m256d A5 = _mm256_load_pd(&matA[(i+4)*THRESHOLD + k]);
-				__m256d C5 = _mm256_mul_pd(A5, B);
-				
-				__m256d A6 = _mm256_load_pd(&matA[(i+5)*THRESHOLD + k]);
-				__m256d C6 = _mm256_mul_pd(A6, B);
-				
-				__m256d A7 = _mm256_load_pd(&matA[(i+6)*THRESHOLD + k]);
-				__m256d C7 = _mm256_mul_pd(A7, B);
-				
-				__m256d A8 = _mm256_load_pd(&matA[(i+7)*THRESHOLD + k]);
-				__m256d C8 = _mm256_mul_pd(A8, B);
+				__m256d C1 = _mm256_mul_pd(A1, B1);
+				__m256d C2 = _mm256_mul_pd(A2, B1);
+				__m256d C3 = _mm256_mul_pd(A1, B2);
+				__m256d C4 = _mm256_mul_pd(A2, B2);
+				__m256d C5 = _mm256_mul_pd(A1, B3);
+				__m256d C6 = _mm256_mul_pd(A2, B3);
+				__m256d C7 = _mm256_mul_pd(A1, B4);
+				__m256d C8 = _mm256_mul_pd(A2, B4);
 			
 				sum1 = _mm256_add_pd(sum1, C1);
 				sum2 = _mm256_add_pd(sum2, C2);
@@ -283,26 +291,26 @@ inline void naiveMatmultTQ_fast(double* matA, double* matBT, double* matC){
 			matC[(i+1)*THRESHOLD + j] = temp2[0] + temp2[1] + temp2[2] + temp2[3];
 			
 			_mm256_store_pd(temp3, sum3);
-			matC[(i+2)*THRESHOLD + j] = temp3[0] + temp3[1] + temp3[2] + temp3[3];
+			matC[i*THRESHOLD + j + 1] = temp3[0] + temp3[1] + temp3[2] + temp3[3];
 			
 			_mm256_store_pd(temp4, sum4);
-			matC[(i+3)*THRESHOLD + j] = temp4[0] + temp4[1] + temp4[2] + temp4[3];
+			matC[(i+1)*THRESHOLD + j + 1] = temp4[0] + temp4[1] + temp4[2] + temp4[3];
 
 			_mm256_store_pd(temp5, sum5);
-			matC[(i+4)*THRESHOLD + j] = temp5[0] + temp5[1] + temp5[2] + temp5[3];
+			matC[i*THRESHOLD + j + 2] = temp5[0] + temp5[1] + temp5[2] + temp5[3];
 			
 			_mm256_store_pd(temp6, sum6);
-			matC[(i+5)*THRESHOLD + j] = temp6[0] + temp6[1] + temp6[2] + temp6[3];
+			matC[(i+1)*THRESHOLD + j + 2] = temp6[0] + temp6[1] + temp6[2] + temp6[3];
 			
 			_mm256_store_pd(temp7, sum7);
-			matC[(i+6)*THRESHOLD + j] = temp7[0] + temp7[1] + temp7[2] + temp7[3];
+			matC[i*THRESHOLD + j + 3] = temp7[0] + temp7[1] + temp7[2] + temp7[3];
 		
 			_mm256_store_pd(temp8, sum8);
-			matC[(i+7)*THRESHOLD + j] = temp8[0] + temp8[1] + temp8[2] + temp8[3];
+			matC[(i+1)*THRESHOLD + j + 3] = temp8[0] + temp8[1] + temp8[2] + temp8[3];
 		}
 	}
 
-	free(temp1);
+//	free(temp1);
 
 
 

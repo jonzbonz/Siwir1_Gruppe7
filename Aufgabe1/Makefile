@@ -83,3 +83,6 @@ test3: $(TARGET)
 	diff -s C.out Matrices/testMatrices/C3.out
 
 testAll: test1 test2 test3
+
+matMuster:
+	/software/opensuse/siwir/matmult Matrices/perfMatrices/2048x2048-1 Matrices/perfMatrices/2048x2048-2 C.out
