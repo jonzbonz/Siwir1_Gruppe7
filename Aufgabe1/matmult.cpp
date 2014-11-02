@@ -30,9 +30,13 @@ extern "C" {
 
 inline void naiveMatmult(double* matA, double* matB, double* matC, int nc, int mc, int na);
 
+inline void naiveMatmultT(double* matA, double* matB, double* matC, int nc, int mc, int na);
+
 inline void naiveMatmultTQ(double* matA, double* matTB, double* matC, int nn);
 
 inline void naiveMatmultTQ_fast(double* matA, double* matTB, double* matC);
+
+//inline void naiveMatmultTQ_fast2(double* matA, double* matBT, double* matC, int nn);
 
 void strassenMult(double* matA, double* matB, double* matC, int nn);
 
@@ -120,7 +124,7 @@ int main(int argc, char* argv[])
 		matC = new double[nc*mc];
 	}
 
-	memset(matC, 0, nc*mc*sizeof(double)); //TODO pruefen ob man das braucht
+	memset(matC, 0, nc*mc*sizeof(double));
 
 #ifdef USE_LIKWID
 	likwid_markerInit();
@@ -134,8 +138,17 @@ int main(int argc, char* argv[])
 
 	if(!useStrassen){ 
 	
-		naiveMatmult(matA, matB, matC, nc, mc, na);
-
+		naiveMatmultT(matA, matB, matC, nc, mc, na);
+	//	naiveMatmult(matA, matB, matC, nc, mc, na);
+	/*	for(int i = 0; i < na-1; ++i){
+			for(int j = i+1; j < na; ++j){
+				double tmp = matB[i*na + j];
+				matB[i*na + j] = matB[j*na + i];
+				matB[j*na + i] = tmp;
+			}
+		}
+		naiveMatmultTQ_fast2(matA, matB, matC, nc);
+*/
 	} else {
 		//Transpose B
 		for(int i = 0; i < na-1; ++i){
@@ -174,8 +187,8 @@ int main(int argc, char* argv[])
 }
 
 inline void naiveMatmult(double* matA, double* matB, double* matC, int nc, int mc, int na){
-	for(int j = 0; j < nc; ++j){							// ueber die Spalten von matC
-		for(int i = 0; i  < mc; ++i){						// ueber die Zeilen von matC
+	for(int i = 0; i  < mc; ++i){							// ueber die Zeilen von matC
+		for(int j = 0; j < nc; ++j){						// ueber die Spalten von matC
 			for(int k = 0;  k  < na/*bzw mb*/; ++k){		// ueber die Spalten von matA / Zeilen von matB
 				matC[i*nc + j] += matA[i*na + k] * matB[k*nc + j];
 			}
@@ -183,37 +196,37 @@ inline void naiveMatmult(double* matA, double* matB, double* matC, int nc, int m
 	}
 }
 
-inline void naiveMatmultTQ(double* matA, double* matBT, double* matC, int nn){
-	//matA and matB have to be ALIGNMENT aligned!!!
-	
-//	siwir::Timer timer;
-
-	double* temp;// = NULL;
-	posix_memalign((void**)&temp, ALIGNMENT, 4*sizeof(double));
-
-	for(int i = 0; i < nn; ++i){
-		for(int j = 0; j < nn; ++j){
-			__m256d sum = _mm256_setzero_pd();
-			for(int k = 0; k < nn; k+=4){
-				__m256d A = _mm256_load_pd(&matA [i*nn + k]);
-				__m256d B = _mm256_load_pd(&matBT[j*nn + k]);
-				__m256d C = _mm256_mul_pd(A, B);
-				
-				sum = _mm256_add_pd(sum, C);
-			}
-
-			_mm256_store_pd(temp, sum);
-			matC[i*nn + j] = temp[0] + temp[1] + temp[2] + temp[3];
+inline void naiveMatmultT(double* matA, double* matB, double* matC, int nc, int mc, int na){
+	for(int i = 0; i < na-1; ++i){
+		for(int j = i+1; j < nc; ++j){
+			double tmp = matB[i*na + j];
+			matB[i*na + j] = matB[j*na + i];
+			matB[j*na + i] = tmp;
 		}
 	}
 
-	free(temp);
+	for(int i = 0; i  < mc; ++i){						// ueber die Zeilen von matC
+		for(int j = 0; j < nc; ++j){							// ueber die Spalten von matC
+			for(int k = 0;  k  < na/*bzw mb*/; ++k){		// ueber die Spalten von matA / Zeilen von matB
+				matC[i*nc + j] += matA[i*na + k] * matB[j*nc + k];
+			}
+		} 
+	}
+}
 
-//	matMultTime += timer.elapsed();
+inline void naiveMatmultTQ(double* matA, double* matBT, double* matC, int nn){
+	//matA and matB have to be ALIGNMENT aligned!!!
+
+	for(int i = 0; i < nn; ++i){
+		for(int j = 0; j < nn; ++j){
+			for(int k = 0; k < nn; ++k){
+				matC[i*nn + j] += matA[i*nn + k]*matBT[j*nn + k];
+			}
+		}
+	}
 }
 
 inline void naiveMatmultTQ_fast(double* matA, double* matBT, double* matC){
-//	siwir::Timer timer;
 
 	double* temp1;
 	posix_memalign((void**)&temp1, ALIGNMENT, 8*4*sizeof(double));
@@ -310,12 +323,112 @@ inline void naiveMatmultTQ_fast(double* matA, double* matBT, double* matC){
 		}
 	}
 
-//	free(temp1);
+	free(temp1);
 
-
-
-//	matMultTime += timer.elapsed();	
 }
+
+/*inline void naiveMatmultTQ_fast2(double* matA, double* matBT, double* matC, int nn){
+	
+cerr << "Calculating " << nn << endl;
+
+	double* temp1;
+	posix_memalign((void**)&temp1, ALIGNMENT, 8*4*sizeof(double));
+	double* temp2 = temp1 + 4;
+	double* temp3 = temp1 + 8;
+	double* temp4 = temp1 + 12;
+	double* temp5 = temp1 + 16;
+	double* temp6 = temp1 + 20;
+	double* temp7 = temp1 + 24;
+	double* temp8 = temp1 + 28;
+
+	
+	for(int j = 0; j < nn; j+=4){
+		for(int i = 0; i < nn; i+=2){
+/ *		
+			__m256d sum1 = _mm256_setzero_pd();
+			__m256d sum2 = _mm256_setzero_pd();
+			__m256d sum3 = _mm256_setzero_pd();
+			__m256d sum4 = _mm256_setzero_pd();
+			__m256d sum5 = _mm256_setzero_pd();
+			__m256d sum6 = _mm256_setzero_pd();
+			__m256d sum7 = _mm256_setzero_pd();
+			__m256d sum8 = _mm256_setzero_pd();
+* /			
+			
+			__m256d B1 = _mm256_load_pd(&matBT[j*nn]);	
+			__m256d B2 = _mm256_load_pd(&matBT[(j+1)*nn]);
+			__m256d B3 = _mm256_load_pd(&matBT[(j+2)*nn]);
+			__m256d B4 = _mm256_load_pd(&matBT[(j+3)*nn]);
+
+			__m256d A1 = _mm256_load_pd(&matA[i*nn]);
+			__m256d A2 = _mm256_load_pd(&matA[(i+1)*nn]);
+			
+			__m256d sum1 = _mm256_mul_pd(A1, B1);
+			__m256d sum2 = _mm256_mul_pd(A2, B1);
+			__m256d sum3 = _mm256_mul_pd(A1, B2);
+			__m256d sum4 = _mm256_mul_pd(A2, B2);
+			__m256d sum5 = _mm256_mul_pd(A1, B3);
+			__m256d sum6 = _mm256_mul_pd(A2, B3);
+			__m256d sum7 = _mm256_mul_pd(A1, B4);
+			__m256d sum8 = _mm256_mul_pd(A2, B4);
+
+			for(int k = 4; k < nn; k+=4){
+				B1 = _mm256_load_pd(&matBT[j*nn + k]);	
+				B2 = _mm256_load_pd(&matBT[(j+1)*nn + k]);
+				B3 = _mm256_load_pd(&matBT[(j+2)*nn + k]);
+				B4 = _mm256_load_pd(&matBT[(j+3)*nn + k]);
+
+				A1 = _mm256_load_pd(&matA[i*nn + k]);
+				A2 = _mm256_load_pd(&matA[(i+1)*nn + k]);
+				
+				__m256d C1 = _mm256_mul_pd(A1, B1);
+				__m256d C2 = _mm256_mul_pd(A2, B1);
+				__m256d C3 = _mm256_mul_pd(A1, B2);
+				__m256d C4 = _mm256_mul_pd(A2, B2);
+				__m256d C5 = _mm256_mul_pd(A1, B3);
+				__m256d C6 = _mm256_mul_pd(A2, B3);
+				__m256d C7 = _mm256_mul_pd(A1, B4);
+				__m256d C8 = _mm256_mul_pd(A2, B4);
+			
+				sum1 = _mm256_add_pd(sum1, C1);
+				sum2 = _mm256_add_pd(sum2, C2);
+				sum3 = _mm256_add_pd(sum3, C3);
+				sum4 = _mm256_add_pd(sum4, C4);
+				sum5 = _mm256_add_pd(sum5, C5);
+				sum6 = _mm256_add_pd(sum6, C6);
+				sum7 = _mm256_add_pd(sum7, C7);
+				sum8 = _mm256_add_pd(sum8, C8);
+			}
+
+			_mm256_store_pd(temp1, sum1);
+			matC[i*nn + j] = temp1[0] + temp1[1] + temp1[2] + temp1[3];
+			
+			_mm256_store_pd(temp2, sum2);
+			matC[(i+1)*nn + j] = temp2[0] + temp2[1] + temp2[2] + temp2[3];
+			
+			_mm256_store_pd(temp3, sum3);
+			matC[i*nn + j + 1] = temp3[0] + temp3[1] + temp3[2] + temp3[3];
+			
+			_mm256_store_pd(temp4, sum4);
+			matC[(i+1)*nn + j + 1] = temp4[0] + temp4[1] + temp4[2] + temp4[3];
+
+			_mm256_store_pd(temp5, sum5);
+			matC[i*nn + j + 2] = temp5[0] + temp5[1] + temp5[2] + temp5[3];
+			
+			_mm256_store_pd(temp6, sum6);
+			matC[(i+1)*nn + j + 2] = temp6[0] + temp6[1] + temp6[2] + temp6[3];
+			
+			_mm256_store_pd(temp7, sum7);
+			matC[i*nn + j + 3] = temp7[0] + temp7[1] + temp7[2] + temp7[3];
+		
+			_mm256_store_pd(temp8, sum8);
+			matC[(i+1)*nn + j + 3] = temp8[0] + temp8[1] + temp8[2] + temp8[3];
+		}
+	}
+
+	free(temp1);
+
+}*/
 
 void strassenMult(double* matA, double* matB, double* matC, int nn){
 	if(nn == THRESHOLD){
