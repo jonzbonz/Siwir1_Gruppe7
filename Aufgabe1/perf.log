@@ -1,65 +1,36 @@
-Naiv:
 Calculating 32x32
-4096  0.000132
+32  1.5e-05
 Calculating 64x64
-4096  0.000554
+32  0.000301
 Calculating 128x128
-4096  0.005042
+32  0.000747
 Calculating 256x256
-4096  0.040986
+32  0.004906
 Calculating 512x512
-4096  0.344137
+32  0.029697
 Calculating 1024x1024
-4096  4.51465
+32  0.178415
 Calculating 2048x2048
-4096  75.3118
-
-Naiv, transponiert:
+32  1.18487
 Calculating 32x32
-4096  0.000132
+512  5.4e-05
 Calculating 64x64
-4096  0.000528
+512  0.000559
 Calculating 128x128
-4096  0.004696
+512  0.005156
 Calculating 256x256
-4096  0.038492
+512  0.042969
 Calculating 512x512
-4096  0.316227
+512  0.014507
 Calculating 1024x1024
-4096  2.59789
+512  0.103035
 Calculating 2048x2048
-4096  21.191
-
-Strassen, transponiert:
-Calculating 32x32
-16  7.2e-05
-Calculating 64x64
-16  0.000455
-Calculating 128x128
-16  0.001451
-Calculating 256x256
-16  0.009644
-Calculating 512x512
-16  0.061802
-Calculating 1024x1024
-16  0.426908
+512  0.737166
 Calculating 2048x2048
-16  2.81017
-
-Strassen, AVX, transponiert, others:
-Calculating 32x32
-32  1.7e-05
-Calculating 64x64
-64  4e-05
-Calculating 128x128
-128  0.000261
-Calculating 256x256
-256  0.001913
-Calculating 512x512
-512  0.013942
-Calculating 1024x1024
-512  0.103298
+512  3.8059
 Calculating 2048x2048
-512  0.737801
-
-
+512  0.765872
+Calculating 2048x2048
+512  0.766217
+Calculating 2048x2048
+512  0.752994

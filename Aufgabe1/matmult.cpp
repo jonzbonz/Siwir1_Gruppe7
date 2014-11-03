@@ -26,6 +26,8 @@ extern "C" {
 #endif
 
 #define THRESHOLD 512
+#define TRANS 0
+#define AVX 1
 #define ALIGNMENT 32 //needed for AVX
 
 inline void naiveMatmult(double* matA, double* matB, double* matC, int nc, int mc, int na);
@@ -36,7 +38,7 @@ inline void naiveMatmultTQ(double* matA, double* matTB, double* matC, int nn);
 
 inline void naiveMatmultTQ_fast(double* matA, double* matTB, double* matC);
 
-//inline void naiveMatmultTQ_fast2(double* matA, double* matBT, double* matC, int nn);
+inline void naiveMatmultTQ_fast2(double* matA, double* matTB, double* matC);
 
 void strassenMult(double* matA, double* matB, double* matC, int nn);
 
@@ -137,9 +139,10 @@ int main(int argc, char* argv[])
 
 
 	if(!useStrassen){ 
-	
-		naiveMatmultT(matA, matB, matC, nc, mc, na);
-	//	naiveMatmult(matA, matB, matC, nc, mc, na);
+		if(TRANS == 1)
+			naiveMatmultT(matA, matB, matC, nc, mc, na);
+		else
+			naiveMatmult(matA, matB, matC, nc, mc, na);
 	/*	for(int i = 0; i < na-1; ++i){
 			for(int j = i+1; j < na; ++j){
 				double tmp = matB[i*na + j];
@@ -250,7 +253,7 @@ inline void naiveMatmultTQ_fast(double* matA, double* matBT, double* matC){
 			__m256d sum6 = _mm256_setzero_pd();
 			__m256d sum7 = _mm256_setzero_pd();
 			__m256d sum8 = _mm256_setzero_pd();
-*/			
+*/		
 			
 			__m256d B1 = _mm256_load_pd(&matBT[j*THRESHOLD]);	
 			__m256d B2 = _mm256_load_pd(&matBT[(j+1)*THRESHOLD]);
@@ -296,7 +299,7 @@ inline void naiveMatmultTQ_fast(double* matA, double* matBT, double* matC){
 				sum7 = _mm256_add_pd(sum7, C7);
 				sum8 = _mm256_add_pd(sum8, C8);
 			}
-
+			
 			_mm256_store_pd(temp1, sum1);
 			matC[i*THRESHOLD + j] = temp1[0] + temp1[1] + temp1[2] + temp1[3];
 			
@@ -327,24 +330,22 @@ inline void naiveMatmultTQ_fast(double* matA, double* matBT, double* matC){
 
 }
 
-/*inline void naiveMatmultTQ_fast2(double* matA, double* matBT, double* matC, int nn){
-	
-cerr << "Calculating " << nn << endl;
-
+inline void naiveMatmultTQ_fast2(double* matA, double* matBT, double* matC){
+/*
 	double* temp1;
-	posix_memalign((void**)&temp1, ALIGNMENT, 8*4*sizeof(double));
-	double* temp2 = temp1 + 4;
-	double* temp3 = temp1 + 8;
-	double* temp4 = temp1 + 12;
-	double* temp5 = temp1 + 16;
-	double* temp6 = temp1 + 20;
-	double* temp7 = temp1 + 24;
-	double* temp8 = temp1 + 28;
-
+	posix_memalign((void**)&temp1, ALIGNMENT/2, 8*2*sizeof(double));
+	double* temp2 = temp1 + 2;
+	double* temp3 = temp1 + 4;
+	double* temp4 = temp1 + 6;
+	double* temp5 = temp1 + 8;
+	double* temp6 = temp1 + 10;
+	double* temp7 = temp1 + 12;
+	double* temp8 = temp1 + 14;
+*/
 	
-	for(int j = 0; j < nn; j+=4){
-		for(int i = 0; i < nn; i+=2){
-/ *		
+	for(int j = 0; j < THRESHOLD; j+=4){
+		for(int i = 0; i < THRESHOLD; i+=2){
+/*		
 			__m256d sum1 = _mm256_setzero_pd();
 			__m256d sum2 = _mm256_setzero_pd();
 			__m256d sum3 = _mm256_setzero_pd();
@@ -353,86 +354,103 @@ cerr << "Calculating " << nn << endl;
 			__m256d sum6 = _mm256_setzero_pd();
 			__m256d sum7 = _mm256_setzero_pd();
 			__m256d sum8 = _mm256_setzero_pd();
-* /			
+*/			
 			
-			__m256d B1 = _mm256_load_pd(&matBT[j*nn]);	
-			__m256d B2 = _mm256_load_pd(&matBT[(j+1)*nn]);
-			__m256d B3 = _mm256_load_pd(&matBT[(j+2)*nn]);
-			__m256d B4 = _mm256_load_pd(&matBT[(j+3)*nn]);
+			__m128d B1 = _mm_load_pd(&matBT[j*THRESHOLD]);	
+			__m128d B2 = _mm_load_pd(&matBT[(j+1)*THRESHOLD]);
+			__m128d B3 = _mm_load_pd(&matBT[(j+2)*THRESHOLD]);
+			__m128d B4 = _mm_load_pd(&matBT[(j+3)*THRESHOLD]);
 
-			__m256d A1 = _mm256_load_pd(&matA[i*nn]);
-			__m256d A2 = _mm256_load_pd(&matA[(i+1)*nn]);
+			__m128d A1 = _mm_load_pd(&matA[i*THRESHOLD]);
+			__m128d A2 = _mm_load_pd(&matA[(i+1)*THRESHOLD]);
 			
-			__m256d sum1 = _mm256_mul_pd(A1, B1);
-			__m256d sum2 = _mm256_mul_pd(A2, B1);
-			__m256d sum3 = _mm256_mul_pd(A1, B2);
-			__m256d sum4 = _mm256_mul_pd(A2, B2);
-			__m256d sum5 = _mm256_mul_pd(A1, B3);
-			__m256d sum6 = _mm256_mul_pd(A2, B3);
-			__m256d sum7 = _mm256_mul_pd(A1, B4);
-			__m256d sum8 = _mm256_mul_pd(A2, B4);
+			__m128d sum1 = _mm_mul_pd(A1, B1);
+			__m128d sum2 = _mm_mul_pd(A2, B1);
+			__m128d sum3 = _mm_mul_pd(A1, B2);
+			__m128d sum4 = _mm_mul_pd(A2, B2);
+			__m128d sum5 = _mm_mul_pd(A1, B3);
+			__m128d sum6 = _mm_mul_pd(A2, B3);
+			__m128d sum7 = _mm_mul_pd(A1, B4);
+			__m128d sum8 = _mm_mul_pd(A2, B4);
 
-			for(int k = 4; k < nn; k+=4){
-				B1 = _mm256_load_pd(&matBT[j*nn + k]);	
-				B2 = _mm256_load_pd(&matBT[(j+1)*nn + k]);
-				B3 = _mm256_load_pd(&matBT[(j+2)*nn + k]);
-				B4 = _mm256_load_pd(&matBT[(j+3)*nn + k]);
+			for(int k = 2; k < THRESHOLD; k+=2){
+				B1 = _mm_load_pd(&matBT[j*THRESHOLD + k]);	
+				B2 = _mm_load_pd(&matBT[(j+1)*THRESHOLD + k]);
+				B3 = _mm_load_pd(&matBT[(j+2)*THRESHOLD + k]);
+				B4 = _mm_load_pd(&matBT[(j+3)*THRESHOLD + k]);
 
-				A1 = _mm256_load_pd(&matA[i*nn + k]);
-				A2 = _mm256_load_pd(&matA[(i+1)*nn + k]);
+				A1 = _mm_load_pd(&matA[i*THRESHOLD + k]);
+				A2 = _mm_load_pd(&matA[(i+1)*THRESHOLD + k]);
 				
-				__m256d C1 = _mm256_mul_pd(A1, B1);
-				__m256d C2 = _mm256_mul_pd(A2, B1);
-				__m256d C3 = _mm256_mul_pd(A1, B2);
-				__m256d C4 = _mm256_mul_pd(A2, B2);
-				__m256d C5 = _mm256_mul_pd(A1, B3);
-				__m256d C6 = _mm256_mul_pd(A2, B3);
-				__m256d C7 = _mm256_mul_pd(A1, B4);
-				__m256d C8 = _mm256_mul_pd(A2, B4);
+				__m128d C1 = _mm_mul_pd(A1, B1);
+				__m128d C2 = _mm_mul_pd(A2, B1);
+				__m128d C3 = _mm_mul_pd(A1, B2);
+				__m128d C4 = _mm_mul_pd(A2, B2);
+				__m128d C5 = _mm_mul_pd(A1, B3);
+				__m128d C6 = _mm_mul_pd(A2, B3);
+				__m128d C7 = _mm_mul_pd(A1, B4);
+				__m128d C8 = _mm_mul_pd(A2, B4);
 			
-				sum1 = _mm256_add_pd(sum1, C1);
-				sum2 = _mm256_add_pd(sum2, C2);
-				sum3 = _mm256_add_pd(sum3, C3);
-				sum4 = _mm256_add_pd(sum4, C4);
-				sum5 = _mm256_add_pd(sum5, C5);
-				sum6 = _mm256_add_pd(sum6, C6);
-				sum7 = _mm256_add_pd(sum7, C7);
-				sum8 = _mm256_add_pd(sum8, C8);
+				sum1 = _mm_add_pd(sum1, C1);
+				sum2 = _mm_add_pd(sum2, C2);
+				sum3 = _mm_add_pd(sum3, C3);
+				sum4 = _mm_add_pd(sum4, C4);
+				sum5 = _mm_add_pd(sum5, C5);
+				sum6 = _mm_add_pd(sum6, C6);
+				sum7 = _mm_add_pd(sum7, C7);
+				sum8 = _mm_add_pd(sum8, C8);
 			}
+			
+			sum1 = _mm_hadd_pd(sum1, sum3);
+			_mm_store_pd(&matC[i*THRESHOLD + j], sum1);
 
-			_mm256_store_pd(temp1, sum1);
-			matC[i*nn + j] = temp1[0] + temp1[1] + temp1[2] + temp1[3];
+			sum2 = _mm_hadd_pd(sum2, sum4);
+			_mm_store_pd(&matC[(i+1)*THRESHOLD + j], sum2);
 			
-			_mm256_store_pd(temp2, sum2);
-			matC[(i+1)*nn + j] = temp2[0] + temp2[1] + temp2[2] + temp2[3];
-			
-			_mm256_store_pd(temp3, sum3);
-			matC[i*nn + j + 1] = temp3[0] + temp3[1] + temp3[2] + temp3[3];
-			
-			_mm256_store_pd(temp4, sum4);
-			matC[(i+1)*nn + j + 1] = temp4[0] + temp4[1] + temp4[2] + temp4[3];
+			sum5 = _mm_hadd_pd(sum5, sum7);
+			_mm_store_pd(&matC[i*THRESHOLD + j + 2], sum5);
 
-			_mm256_store_pd(temp5, sum5);
-			matC[i*nn + j + 2] = temp5[0] + temp5[1] + temp5[2] + temp5[3];
+			sum6 = _mm_hadd_pd(sum6, sum8);
+			_mm_store_pd(&matC[(i+1)*THRESHOLD + j + 2], sum6);
+
+/*
+			_mm_store_pd(temp1, sum1);
+			matC[i*THRESHOLD + j] = temp1[0] + temp1[1];
 			
-			_mm256_store_pd(temp6, sum6);
-			matC[(i+1)*nn + j + 2] = temp6[0] + temp6[1] + temp6[2] + temp6[3];
+			_mm_store_pd(temp2, sum2);
+			matC[(i+1)*THRESHOLD + j] = temp2[0] + temp2[1];
 			
-			_mm256_store_pd(temp7, sum7);
-			matC[i*nn + j + 3] = temp7[0] + temp7[1] + temp7[2] + temp7[3];
+			_mm_store_pd(temp3, sum3);
+			matC[i*THRESHOLD + j + 1] = temp3[0] + temp3[1];
+			
+			_mm_store_pd(temp4, sum4);
+			matC[(i+1)*THRESHOLD + j + 1] = temp4[0] + temp4[1];
+
+			_mm_store_pd(temp5, sum5);
+			matC[i*THRESHOLD + j + 2] = temp5[0] + temp5[1];
+			
+			_mm_store_pd(temp6, sum6);
+			matC[(i+1)*THRESHOLD + j + 2] = temp6[0] + temp6[1];
+			
+			_mm_store_pd(temp7, sum7);
+			matC[i*THRESHOLD + j + 3] = temp7[0] + temp7[1];
 		
-			_mm256_store_pd(temp8, sum8);
-			matC[(i+1)*nn + j + 3] = temp8[0] + temp8[1] + temp8[2] + temp8[3];
+			_mm_store_pd(temp8, sum8);
+			matC[(i+1)*THRESHOLD + j + 3] = temp8[0] + temp8[1]; */
 		}
 	}
 
-	free(temp1);
+//	free(temp1);
 
-}*/
+}
 
 void strassenMult(double* matA, double* matB, double* matC, int nn){
 	if(nn == THRESHOLD){
-		naiveMatmultTQ_fast(matA, matB, matC);
+		if(AVX == 1)
+			naiveMatmultTQ_fast(matA, matB, matC);
+		else
+			naiveMatmultTQ(matA, matB, matC, nn);
+
 		return;
 	} else if(nn < THRESHOLD){
 		cerr << "Duerfte nicht passieren!" << endl;

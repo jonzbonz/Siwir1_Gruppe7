@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++0x -Wall -Wextra -Wshadow -Werror -Ofast -DNDEBUG -mavx #-unroll-loops # -march=native
+CXXFLAGS = -std=c++0x -m64 -Wall -Wextra -Wshadow -Werror -Ofast -DNDEBUG -march=native -mtune=native #-mavx #-unroll-loops
 
 INCLUDES =
 LDFLAGS =
@@ -32,6 +32,7 @@ run: $(TARGET)
 likwid: $(TARGET)
 	rm -f likwid.log
 	./likwidScript >> likwid.log
+	vim likwid.log
 
 perfClean:
 	rm -f perf.log
